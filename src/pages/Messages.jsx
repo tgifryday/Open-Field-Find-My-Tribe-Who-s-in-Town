@@ -1,15 +1,24 @@
-import { useState } from 'react';
-import { MessageCircle, Send, MapPin, Users, WifiOff, ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { MessageCircle, Send, MapPin, Users, WifiOff, ArrowLeft, User } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import Avatar from '../components/Avatar';
 
 export default function Messages() {
-  const { user, allMessages, sendMessage, getTribeById } = useApp();
+  const { user, allMessages, sendMessage, getTribeById, getUserById } = useApp();
   const [selectedThread, setSelectedThread] = useState(null);
   const [newMessage, setNewMessage] = useState('');
+  const location = useLocation();
 
-  const inRange = allMessages;
-  const outOfRange = [];
+  // Open a specific thread if navigated with state
+  useEffect(() => {
+    if (location.state?.openThread) {
+      setSelectedThread(location.state.openThread);
+    }
+  }, [location.state]);
+
+  const groupThreads = allMessages.filter((t) => t.type === 'group' || !t.type);
+  const directThreads = allMessages.filter((t) => t.type === 'direct');
 
   const handleSend = () => {
     if (!newMessage.trim() || !selectedThread) return;
@@ -29,7 +38,9 @@ export default function Messages() {
   if (selectedThread) {
     const thread = allMessages.find((t) => t.id === selectedThread);
     if (!thread) return null;
-    const tribe = getTribeById(thread.tribeId);
+    const isDirect = thread.type === 'direct';
+    const otherUserId = isDirect ? thread.members.find((m) => m !== user.id) : null;
+    const otherUser = otherUserId ? getUserById(otherUserId) : null;
 
     return (
       <div className="pb-20 pt-16 flex flex-col h-[calc(100vh-0px)]">
@@ -40,13 +51,24 @@ export default function Messages() {
               <ArrowLeft size={20} className="text-slate-600" />
             </button>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm text-slate-800 truncate">{thread.name}</h3>
+              <h3 className="font-semibold text-sm text-slate-800 truncate">
+                {isDirect ? (otherUser?.name || 'Direct Message') : thread.name}
+              </h3>
               <div className="flex items-center gap-1 text-xs text-slate-400">
-                <MapPin size={10} />
-                <span>{thread.radius.miles} mi radius</span>
-                <span className="mx-1">&middot;</span>
-                <Users size={10} />
-                <span>{thread.members.length} in range</span>
+                {isDirect ? (
+                  <>
+                    <User size={10} />
+                    <span>Direct message</span>
+                  </>
+                ) : (
+                  <>
+                    <MapPin size={10} />
+                    <span>{thread.radius?.miles} mi radius</span>
+                    <span className="mx-1">&middot;</span>
+                    <Users size={10} />
+                    <span>{thread.members.length} in range</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -54,12 +76,20 @@ export default function Messages() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 pt-28 pb-20 space-y-3">
-          <div className="bg-emerald-50 rounded-xl p-3 text-center">
-            <p className="text-xs text-emerald-600">
-              This thread is based on proximity. Members within {thread.radius.miles} miles of the center can participate.
-              People who move out of range will see this thread in their "Out of Range" folder.
-            </p>
-          </div>
+          {!isDirect && (
+            <div className="bg-emerald-50 rounded-xl p-3 text-center">
+              <p className="text-xs text-emerald-600">
+                This thread is based on proximity. Members within {thread.radius?.miles} miles of the center can participate.
+              </p>
+            </div>
+          )}
+          {isDirect && thread.messages.length === 0 && (
+            <div className="bg-blue-50 rounded-xl p-3 text-center">
+              <p className="text-xs text-blue-600">
+                Start a conversation with {otherUser?.name || 'this person'}. Say hello!
+              </p>
+            </div>
+          )}
           {thread.messages.map((msg, i) => {
             const isMe = msg.userId === user.id;
             return (
@@ -116,13 +146,53 @@ export default function Messages() {
       <div className="px-4 py-4 space-y-4">
         <h2 className="text-xl font-bold text-slate-800">Messages</h2>
 
-        {/* In Range */}
+        {/* Direct Messages */}
+        {directThreads.length > 0 && (
+          <div>
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+              <User size={12} /> Direct Messages
+            </h3>
+            <div className="space-y-2">
+              {directThreads.map((thread) => {
+                const otherUserId = thread.members.find((m) => m !== user.id);
+                const otherUser = getUserById(otherUserId);
+                const lastMsg = thread.messages[thread.messages.length - 1];
+                return (
+                  <button
+                    key={thread.id}
+                    onClick={() => setSelectedThread(thread.id)}
+                    className="w-full text-left bg-white rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar name={otherUser?.name || '?'} size="md" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium text-sm text-slate-800 truncate">{otherUser?.name || 'Unknown'}</h3>
+                          {lastMsg && <span className="text-[10px] text-slate-400">{formatTime(lastMsg.time)}</span>}
+                        </div>
+                        {lastMsg ? (
+                          <p className="text-xs text-slate-500 truncate mt-0.5">
+                            <span className="font-medium">{lastMsg.userName}:</span> {lastMsg.text}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-slate-400 mt-0.5">No messages yet</p>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Group Threads - In Range */}
         <div>
           <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-            <MapPin size={12} /> In Range
+            <MapPin size={12} /> Group Threads
           </h3>
           <div className="space-y-2">
-            {inRange.map((thread) => {
+            {groupThreads.map((thread) => {
               const lastMsg = thread.messages[thread.messages.length - 1];
               return (
                 <button
@@ -143,7 +213,7 @@ export default function Messages() {
                         <span className="font-medium">{lastMsg.userName}:</span> {lastMsg.text}
                       </p>
                       <div className="flex items-center gap-1 mt-1 text-[10px] text-slate-400">
-                        <Users size={10} /> {thread.members.length} members &middot; {thread.radius.miles} mi radius
+                        <Users size={10} /> {thread.members.length} members &middot; {thread.radius?.miles} mi radius
                       </div>
                     </div>
                   </div>
@@ -153,17 +223,7 @@ export default function Messages() {
           </div>
         </div>
 
-        {/* Out of Range */}
-        {outOfRange.length > 0 && (
-          <div>
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-              <WifiOff size={12} /> Out of Range
-            </h3>
-            <p className="text-sm text-slate-400 text-center py-4">Threads you've moved away from will appear here.</p>
-          </div>
-        )}
-
-        {inRange.length === 0 && outOfRange.length === 0 && (
+        {groupThreads.length === 0 && directThreads.length === 0 && (
           <div className="text-center py-12">
             <MessageCircle size={40} className="text-slate-200 mx-auto mb-3" />
             <p className="text-slate-400 text-sm">No active message threads</p>

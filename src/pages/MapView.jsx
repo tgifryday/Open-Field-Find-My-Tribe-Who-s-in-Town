@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import { useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
+import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import { useApp } from '../context/AppContext';
-import { placeTypes } from '../data/mockData';
+import { placeTypes, vehicleTypes } from '../data/mockData';
 import Avatar from '../components/Avatar';
 
 // Fix Leaflet marker icons
@@ -33,15 +34,43 @@ function createPersonIcon(name) {
   });
 }
 
-const filters = ['all', 'people', 'places', 'events'];
+function createEmojiIcon(emoji, bgColor) {
+  return L.divIcon({
+    className: 'custom-marker',
+    html: `<div style="background:${bgColor};width:24px;height:24px;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;">${emoji}</div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+  });
+}
+
+const filters = ['all', 'people', 'places', 'vehicles', 'gear', 'events'];
 
 export default function MapView() {
-  const { user, allUsers, allPlaces, allEvents } = useApp();
+  const { user, allUsers, allPlaces, allVehicles, allGear, allEvents, startDirectMessage, getUserById } = useApp();
+  const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
   const [selectedPlaceType, setSelectedPlaceType] = useState('all');
   const center = [user.location.lat, user.location.lng];
 
   const otherUsers = allUsers.filter((u) => u.id !== user.id);
+
+  const handleMessage = (userId) => {
+    const threadId = startDirectMessage(userId);
+    if (threadId) {
+      navigate('/messages', { state: { openThread: threadId } });
+    }
+  };
+
+  const handleViewProfile = (userId) => {
+    navigate(`/user/${userId}`);
+  };
+
+  const handleMessageOwner = (ownerId) => {
+    const threadId = startDirectMessage(ownerId);
+    if (threadId) {
+      navigate('/messages', { state: { openThread: threadId } });
+    }
+  };
 
   return (
     <div className="pb-20 pt-16">
@@ -130,7 +159,7 @@ export default function MapView() {
                   icon={createPersonIcon(u.name)}
                 >
                   <Popup>
-                    <div className="text-center min-w-[120px]">
+                    <div className="text-center min-w-[160px]">
                       <strong>{u.name}</strong>
                       <br />
                       <span className="text-xs text-gray-500">{u.location.city}</span>
@@ -142,6 +171,20 @@ export default function MapView() {
                           <span key={i} className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">{i}</span>
                         ))}
                       </div>
+                      <div className="flex gap-2 mt-2 justify-center">
+                        <button
+                          onClick={() => handleMessage(u.id)}
+                          className="text-[11px] font-medium bg-emerald-600 text-white px-3 py-1 rounded-lg hover:bg-emerald-700 transition-colors"
+                        >
+                          Message
+                        </button>
+                        <button
+                          onClick={() => handleViewProfile(u.id)}
+                          className="text-[11px] font-medium bg-slate-100 text-slate-700 px-3 py-1 rounded-lg hover:bg-slate-200 transition-colors"
+                        >
+                          Profile
+                        </button>
+                      </div>
                     </div>
                   </Popup>
                 </Marker>
@@ -151,24 +194,146 @@ export default function MapView() {
             {(filter === 'all' || filter === 'places') &&
               allPlaces
                 .filter((p) => selectedPlaceType === 'all' || p.type === selectedPlaceType)
-                .map((place) => (
+                .map((place) => {
+                  const owner = getUserById(place.addedBy);
+                  return (
+                    <Marker
+                      key={place.id}
+                      position={[place.lat, place.lng]}
+                      icon={createColorIcon(placeTypes[place.type]?.color || '#64748b')}
+                    >
+                      <Popup>
+                        <div className="min-w-[160px]">
+                          <strong>{place.name}</strong>
+                          <br />
+                          <span className="text-xs bg-slate-100 px-1.5 py-0.5 rounded-full">{placeTypes[place.type]?.label}</span>
+                          {place.cost && <span className="text-xs ml-1">&middot; {place.cost}</span>}
+                          <br />
+                          <span className="text-xs text-gray-500">{place.description}</span>
+                          {place.address && (
+                            <>
+                              <br />
+                              <span className="text-[10px] text-gray-400">{place.address}</span>
+                            </>
+                          )}
+                          {place.googleLink && (
+                            <>
+                              <br />
+                              <a href={place.googleLink} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 underline">View on Google Maps</a>
+                            </>
+                          )}
+                          {owner && owner.id !== user.id && (
+                            <div className="flex gap-2 mt-2">
+                              <button
+                                onClick={() => handleMessageOwner(owner.id)}
+                                className="text-[11px] font-medium bg-emerald-600 text-white px-3 py-1 rounded-lg hover:bg-emerald-700 transition-colors"
+                              >
+                                Message {owner.name}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </Popup>
+                    </Marker>
+                  );
+                })}
+
+            {/* Vehicles */}
+            {(filter === 'all' || filter === 'vehicles') &&
+              allVehicles.map((v) => {
+                const owner = getUserById(v.owner);
+                const vType = vehicleTypes[v.type] || {};
+                return (
                   <Marker
-                    key={place.id}
-                    position={[place.lat, place.lng]}
-                    icon={createColorIcon(placeTypes[place.type]?.color || '#64748b')}
+                    key={v.id}
+                    position={[v.lat, v.lng]}
+                    icon={createEmojiIcon(v.type === 'bike' ? '\u{1F6B2}' : v.type === 'van' ? '\u{1F690}' : v.type === 'truck' ? '\u{1F69A}' : v.type === 'scooter' ? '\u{1F6F4}' : '\u{1F697}', vType.color || '#3b82f6')}
                   >
                     <Popup>
-                      <div className="min-w-[140px]">
-                        <strong>{place.name}</strong>
+                      <div className="min-w-[160px]">
+                        <strong>{v.name}</strong>
                         <br />
-                        <span className="text-xs bg-slate-100 px-1.5 py-0.5 rounded-full">{placeTypes[place.type]?.label}</span>
-                        {place.cost && <span className="text-xs ml-1">&middot; {place.cost}</span>}
+                        <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ backgroundColor: (vType.color || '#64748b') + '20', color: vType.color || '#64748b' }}>
+                          {vType.label || v.type}
+                        </span>
+                        <span className="text-xs ml-1">&middot; {v.cost}</span>
                         <br />
-                        <span className="text-xs text-gray-500">{place.description}</span>
+                        <span className={`text-[10px] font-medium ${v.available ? 'text-emerald-600' : 'text-red-500'}`}>
+                          {v.available ? 'Available' : 'Not Available'}
+                        </span>
+                        <br />
+                        <span className="text-xs text-gray-500">{v.description}</span>
+                        {v.address && (
+                          <>
+                            <br />
+                            <span className="text-[10px] text-gray-400">{v.address}</span>
+                          </>
+                        )}
+                        {owner && owner.id !== user.id && (
+                          <div className="flex gap-2 mt-2">
+                            <button
+                              onClick={() => handleMessageOwner(owner.id)}
+                              className="text-[11px] font-medium bg-emerald-600 text-white px-3 py-1 rounded-lg hover:bg-emerald-700 transition-colors"
+                            >
+                              Message {owner.name}
+                            </button>
+                            <button
+                              onClick={() => handleViewProfile(owner.id)}
+                              className="text-[11px] font-medium bg-slate-100 text-slate-700 px-3 py-1 rounded-lg hover:bg-slate-200 transition-colors"
+                            >
+                              Profile
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </Popup>
                   </Marker>
-                ))}
+                );
+              })}
+
+            {/* Gear */}
+            {(filter === 'all' || filter === 'gear') &&
+              allGear
+                .filter((g) => g.lat && g.lng)
+                .map((g) => {
+                  const owner = getUserById(g.owner);
+                  return (
+                    <Marker
+                      key={g.id}
+                      position={[g.lat, g.lng]}
+                      icon={createEmojiIcon('\u{1F392}', '#f97316')}
+                    >
+                      <Popup>
+                        <div className="min-w-[160px]">
+                          <strong>{g.name}</strong>
+                          <br />
+                          <span className="text-xs">{g.cost}</span>
+                          <span className={`text-[10px] ml-2 font-medium ${g.available ? 'text-emerald-600' : 'text-red-500'}`}>
+                            {g.available ? 'Available' : 'In Use'}
+                          </span>
+                          <br />
+                          <span className="text-xs text-gray-500">{g.description}</span>
+                          {owner && owner.id !== user.id && (
+                            <div className="flex gap-2 mt-2">
+                              <button
+                                onClick={() => handleMessageOwner(owner.id)}
+                                className="text-[11px] font-medium bg-emerald-600 text-white px-3 py-1 rounded-lg hover:bg-emerald-700 transition-colors"
+                              >
+                                Message {owner.name}
+                              </button>
+                              <button
+                                onClick={() => handleViewProfile(owner.id)}
+                                className="text-[11px] font-medium bg-slate-100 text-slate-700 px-3 py-1 rounded-lg hover:bg-slate-200 transition-colors"
+                              >
+                                Profile
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </Popup>
+                    </Marker>
+                  );
+                })}
 
             {/* Events */}
             {(filter === 'all' || filter === 'events') &&

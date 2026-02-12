@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from 'react';
-import { currentUser, users, tribes, places, gear, events, callouts, messages } from '../data/mockData';
+import { currentUser, users, tribes, places, gear, vehicles, events, callouts, messages } from '../data/mockData';
 
 const AppContext = createContext();
 
@@ -8,8 +8,9 @@ export function AppProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [allUsers] = useState(users);
   const [allTribes, setAllTribes] = useState(tribes);
-  const [allPlaces] = useState(places);
-  const [allGear] = useState(gear);
+  const [allPlaces, setAllPlaces] = useState(places);
+  const [allGear, setAllGear] = useState(gear);
+  const [allVehicles, setAllVehicles] = useState(vehicles);
   const [allEvents] = useState(events);
   const [allCallouts, setAllCallouts] = useState(callouts);
   const [allMessages, setAllMessages] = useState(messages);
@@ -74,16 +75,80 @@ export function AppProvider({ children }) {
   const getUserById = (id) => allUsers.find((u) => u.id === id);
   const getTribeById = (id) => allTribes.find((t) => t.id === id);
 
+  // Place CRUD
+  const addPlace = (place) => {
+    const newPlace = {
+      ...place,
+      id: `place-${Date.now()}`,
+      addedBy: user.id,
+      rating: 0,
+    };
+    setAllPlaces((prev) => [...prev, newPlace]);
+    return newPlace;
+  };
+
+  // Vehicle CRUD
+  const addVehicle = (vehicle) => {
+    const newVehicle = {
+      ...vehicle,
+      id: `vehicle-${Date.now()}`,
+      owner: user.id,
+    };
+    setAllVehicles((prev) => [...prev, newVehicle]);
+    return newVehicle;
+  };
+
+  // Gear CRUD
+  const addGear = (gearItem) => {
+    const newGear = {
+      ...gearItem,
+      id: `gear-${Date.now()}`,
+      owner: user.id,
+    };
+    setAllGear((prev) => [...prev, newGear]);
+    return newGear;
+  };
+
+  // Direct messaging
+  const startDirectMessage = (otherUserId) => {
+    const otherUser = getUserById(otherUserId);
+    if (!otherUser) return null;
+
+    // Check if DM thread already exists
+    const existing = allMessages.find(
+      (t) => t.type === 'direct' && t.members.includes(user.id) && t.members.includes(otherUserId)
+    );
+    if (existing) return existing.id;
+
+    const newThread = {
+      id: `dm-${Date.now()}`,
+      name: otherUser.name,
+      type: 'direct',
+      members: [user.id, otherUserId],
+      messages: [],
+    };
+    setAllMessages((prev) => [newThread, ...prev]);
+    return newThread.id;
+  };
+
+  // Get listings by user
+  const getUserPlaces = (userId) => allPlaces.filter((p) => p.addedBy === userId);
+  const getUserVehicles = (userId) => allVehicles.filter((v) => v.owner === userId);
+  const getUserGear = (userId) => allGear.filter((g) => g.owner === userId);
+
   return (
     <AppContext.Provider
       value={{
         user, setUser, isLoggedIn, login, logout,
-        allUsers, allTribes, allPlaces, allGear, allEvents,
+        allUsers, allTribes, allPlaces, allGear, allVehicles, allEvents,
         allCallouts, addCallout, respondToCallout,
         allMessages, sendMessage,
         notifications, markNotificationRead,
         getNearbyUsers, getUserTribes, getUserById, getTribeById,
         createTribe,
+        addPlace, addVehicle, addGear,
+        startDirectMessage,
+        getUserPlaces, getUserVehicles, getUserGear,
       }}
     >
       {children}

@@ -10,6 +10,7 @@ import Callouts from './pages/Callouts';
 import Search from './pages/Search';
 import Messages from './pages/Messages';
 import Profile from './pages/Profile';
+import UserProfile from './pages/UserProfile';
 
 function AppContent() {
   const { isLoggedIn } = useApp();
@@ -30,6 +31,7 @@ function AppContent() {
           <Route path="/search" element={<Search />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/user/:userId" element={<UserProfile />} />
         </Routes>
       </main>
       <BottomNav />

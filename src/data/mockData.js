@@ -152,15 +152,33 @@ export const places = [
   { id: 'place-8', name: 'Mulholland Overlook', type: 'stealth-camping', lat: 34.1285, lng: -118.3268, rating: 3.5, description: 'Quiet pullover spot. Leave by 6am. Van/car friendly.', addedBy: 'user-5' },
   { id: 'place-9', name: 'WeWork Santa Monica', type: 'work', lat: 34.0195, lng: -118.4965, rating: 4.4, description: 'Day passes available. Fast wifi.', cost: '$$', addedBy: 'user-2' },
   { id: 'place-10', name: 'Community Kitchen DTLA', type: 'kitchen', lat: 34.0407, lng: -118.2468, rating: 4.3, description: 'Shared kitchen space. $10/session.', cost: '$', addedBy: 'user-6' },
+  // Rooms, garages, yards, session spaces
+  { id: 'place-11', name: 'Spare Room in Silver Lake', type: 'room', lat: 34.0869, lng: -118.2702, rating: 4.6, description: 'Private room, shared bathroom. Quiet neighborhood. Available weekly.', cost: '$30/night', addedBy: 'user-6', address: '1234 Sunset Blvd, Silver Lake, CA' },
+  { id: 'place-12', name: 'Garage Workshop Space', type: 'garage', lat: 34.0625, lng: -118.2275, rating: 4.3, description: '2-car garage with workbench, tools, and electricity. Great for projects.', cost: '$15/day', addedBy: 'user-3', address: '456 Main St, DTLA, CA' },
+  { id: 'place-13', name: 'Backyard Garden Hangout', type: 'yard', lat: 34.0350, lng: -118.3900, rating: 4.8, description: 'Big backyard with hammocks, fire pit, and outdoor kitchen. BBQ welcome!', cost: 'free', addedBy: 'user-6', address: '789 Oak Ave, Culver City, CA' },
+  { id: 'place-14', name: 'Echo Park Session Space', type: 'session-space', lat: 34.0780, lng: -118.2550, rating: 4.5, description: 'Soundproofed room with basic instruments. Great for jam sessions or practice.', cost: '$20/hr', addedBy: 'user-5', address: '321 Echo Park Ave, LA, CA' },
+  { id: 'place-15', name: 'Venice Co-Living Room', type: 'room', lat: 33.9920, lng: -118.4650, rating: 4.4, description: 'Shared room in co-living house. 5 min walk to beach. Includes kitchen access.', cost: '$25/night', addedBy: 'user-2', address: '555 Venice Blvd, Venice, CA' },
+  // Recommendations with Google links
+  { id: 'place-16', name: 'Gjusta', type: 'restaurant', lat: 34.0010, lng: -118.4660, rating: 4.9, description: 'Best bakery/deli in Venice. Amazing pastries and sandwiches.', addedBy: 'user-2', googleLink: 'https://maps.google.com/?cid=1234567890' },
+  { id: 'place-17', name: 'Dinosaur Coffee', type: 'cafe', lat: 34.0870, lng: -118.2680, rating: 4.7, description: 'Cozy Silver Lake cafe. Great espresso and outdoor seating.', addedBy: 'user-3', googleLink: 'https://maps.google.com/?cid=9876543210' },
+  { id: 'place-18', name: 'HomeState', type: 'restaurant', lat: 34.0910, lng: -118.2810, rating: 4.6, description: 'Texas-style breakfast tacos in Los Feliz. Worth the wait.', addedBy: 'user-4', googleLink: 'https://maps.google.com/?cid=1122334455' },
+];
+
+export const vehicles = [
+  { id: 'vehicle-1', name: 'Honda Civic 2019', type: 'car', owner: 'user-3', available: true, cost: '$30/day', description: 'Reliable sedan, great on gas. 4 doors. Pickup in Echo Park.', lat: 34.0736, lng: -118.2400, address: 'Echo Park, LA, CA' },
+  { id: 'vehicle-2', name: 'Beach Cruiser Bike', type: 'bike', owner: 'user-2', available: true, cost: 'free', description: 'Single-speed cruiser, perfect for boardwalk rides. Includes lock.', lat: 34.0195, lng: -118.4912, address: 'Santa Monica, CA' },
+  { id: 'vehicle-3', name: 'VW Vanagon 1987', type: 'van', owner: 'user-5', available: false, cost: '$60/day', description: 'Classic camper van. Sleeps 2, has a small kitchen. Currently on a trip.', lat: 33.9425, lng: -118.4081, address: 'Playa del Rey, CA' },
+  { id: 'vehicle-4', name: 'Electric Scooter', type: 'scooter', owner: 'user-8', available: true, cost: '$10/day', description: 'Xiaomi e-scooter. 20mi range. Great for getting around the city.', lat: 34.0622, lng: -118.3537, address: 'Mid-City, LA, CA' },
+  { id: 'vehicle-5', name: 'Toyota Tacoma Pickup', type: 'truck', owner: 'user-3', available: true, cost: '$50/day', description: '4x4 pickup, great for hauling gear or weekend trips. Has a bed rack.', lat: 34.0736, lng: -118.2400, address: 'Echo Park, LA, CA' },
 ];
 
 export const gear = [
-  { id: 'gear-1', name: 'Camping Tent (4-person)', owner: 'user-3', available: true, cost: 'free', description: 'REI Half Dome, great condition.' },
-  { id: 'gear-2', name: 'Surfboard (longboard)', owner: 'user-5', available: true, cost: '$10/day', description: '9ft Wavestorm. Perfect for beginners.' },
-  { id: 'gear-3', name: 'Portable Solar Panel', owner: 'user-3', available: false, cost: 'free', description: 'Goal Zero Nomad 50. Currently in use.' },
-  { id: 'gear-4', name: 'Climbing Harness + Shoes', owner: 'user-3', available: true, cost: 'free', description: 'Size M harness, size 10 shoes.' },
-  { id: 'gear-5', name: 'Camping Stove', owner: 'user-5', available: true, cost: 'free', description: 'MSR PocketRocket. Includes fuel canister.' },
-  { id: 'gear-6', name: 'Yoga Mat', owner: 'user-2', available: true, cost: 'free', description: 'Manduka PRO. Well-loved but functional.' },
+  { id: 'gear-1', name: 'Camping Tent (4-person)', owner: 'user-3', available: true, cost: 'free', description: 'REI Half Dome, great condition.', lat: 34.0736, lng: -118.2400 },
+  { id: 'gear-2', name: 'Surfboard (longboard)', owner: 'user-5', available: true, cost: '$10/day', description: '9ft Wavestorm. Perfect for beginners.', lat: 33.9425, lng: -118.4081 },
+  { id: 'gear-3', name: 'Portable Solar Panel', owner: 'user-3', available: false, cost: 'free', description: 'Goal Zero Nomad 50. Currently in use.', lat: 34.0736, lng: -118.2400 },
+  { id: 'gear-4', name: 'Climbing Harness + Shoes', owner: 'user-3', available: true, cost: 'free', description: 'Size M harness, size 10 shoes.', lat: 34.0736, lng: -118.2400 },
+  { id: 'gear-5', name: 'Camping Stove', owner: 'user-5', available: true, cost: 'free', description: 'MSR PocketRocket. Includes fuel canister.', lat: 33.9425, lng: -118.4081 },
+  { id: 'gear-6', name: 'Yoga Mat', owner: 'user-2', available: true, cost: 'free', description: 'Manduka PRO. Well-loved but functional.', lat: 34.0195, lng: -118.4912 },
 ];
 
 export const events = [
@@ -217,6 +235,7 @@ export const messages = [
     id: 'thread-1',
     name: 'LA Nomads - Downtown Area',
     tribeId: 'tribe-1',
+    type: 'group',
     radius: { lat: 34.0522, lng: -118.2437, miles: 10 },
     members: ['user-1', 'user-2', 'user-3', 'user-6', 'user-8'],
     messages: [
@@ -230,6 +249,7 @@ export const messages = [
     id: 'thread-2',
     name: 'SoCal Surfers - Westside',
     tribeId: 'tribe-2',
+    type: 'group',
     radius: { lat: 34.0195, lng: -118.4912, miles: 5 },
     members: ['user-1', 'user-2', 'user-5'],
     messages: [
@@ -251,5 +271,18 @@ export const placeTypes = {
   recommendation: { label: 'Recommendations', icon: 'Star', color: '#eab308' },
   store: { label: 'Stores', icon: 'Store', color: '#ec4899' },
   restaurant: { label: 'Restaurants', icon: 'UtensilsCrossed', color: '#ef4444' },
+  cafe: { label: 'Cafes', icon: 'Coffee', color: '#92400e' },
   event: { label: 'Events', icon: 'Calendar', color: '#f59e0b' },
+  room: { label: 'Rooms', icon: 'Home', color: '#7c3aed' },
+  garage: { label: 'Garages', icon: 'Wrench', color: '#64748b' },
+  yard: { label: 'Yards', icon: 'Flower2', color: '#16a34a' },
+  'session-space': { label: 'Session Spaces', icon: 'Music', color: '#dc2626' },
+};
+
+export const vehicleTypes = {
+  car: { label: 'Car', icon: 'Car', color: '#3b82f6' },
+  van: { label: 'Van', icon: 'Bus', color: '#f59e0b' },
+  bike: { label: 'Bike', icon: 'Bike', color: '#10b981' },
+  scooter: { label: 'Scooter', icon: 'Zap', color: '#8b5cf6' },
+  truck: { label: 'Truck', icon: 'Truck', color: '#64748b' },
 };

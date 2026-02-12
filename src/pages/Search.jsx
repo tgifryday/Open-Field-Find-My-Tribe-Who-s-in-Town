@@ -1,15 +1,17 @@
 import { useState, useMemo } from 'react';
 import {
-  Search as SearchIcon, Users, MapPin, Package, Calendar,
+  Search as SearchIcon, Users, MapPin, Package, Calendar, Car, MessageCircle,
   Trees, Laptop, Moon, Droplets, Leaf, Tent, Star, UtensilsCrossed, Store,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { placeTypes } from '../data/mockData';
+import { placeTypes, vehicleTypes } from '../data/mockData';
 import Avatar from '../components/Avatar';
 
 const tabs = [
   { id: 'people', label: 'People', icon: Users },
   { id: 'places', label: 'Places', icon: MapPin },
+  { id: 'vehicles', label: 'Vehicles', icon: Car },
   { id: 'gear', label: 'Gear', icon: Package },
   { id: 'events', label: 'Events', icon: Calendar },
 ];
@@ -25,7 +27,8 @@ const placeTypeIcons = {
 };
 
 export default function Search() {
-  const { allUsers, user, allPlaces, allGear, allEvents, getUserById } = useApp();
+  const { allUsers, user, allPlaces, allGear, allVehicles, allEvents, getUserById, startDirectMessage } = useApp();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('people');
   const [query, setQuery] = useState('');
   const [selectedActivity, setSelectedActivity] = useState(null);
@@ -33,6 +36,17 @@ export default function Search() {
   const [maxDistance, setMaxDistance] = useState(50);
 
   const otherUsers = allUsers.filter((u) => u.id !== user.id);
+
+  const handleMessage = (userId) => {
+    const threadId = startDirectMessage(userId);
+    if (threadId) {
+      navigate('/messages', { state: { openThread: threadId } });
+    }
+  };
+
+  const handleViewProfile = (userId) => {
+    navigate(`/user/${userId}`);
+  };
 
   const filteredPeople = useMemo(() => {
     let result = otherUsers;
@@ -59,6 +73,15 @@ export default function Search() {
     }
     return result;
   }, [allPlaces, selectedPlaceType, query]);
+
+  const filteredVehicles = useMemo(() => {
+    let result = allVehicles;
+    if (query) {
+      const q = query.toLowerCase();
+      result = result.filter((v) => v.name.toLowerCase().includes(q) || v.description.toLowerCase().includes(q));
+    }
+    return result;
+  }, [allVehicles, query]);
 
   const filteredGear = useMemo(() => {
     let result = allGear;
@@ -88,18 +111,18 @@ export default function Search() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search people, places, gear, events..."
+            placeholder="Search people, places, vehicles, gear, events..."
             className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white"
           />
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === id ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200'
               }`}
             >
@@ -163,6 +186,20 @@ export default function Search() {
                       <span className="text-xs font-medium text-slate-600">{person.reputation}</span>
                       <span className="text-xs text-slate-400">({person.totalRatings} ratings)</span>
                     </div>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => handleMessage(person.id)}
+                        className="flex items-center gap-1 text-xs font-medium bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition-colors"
+                      >
+                        <MessageCircle size={12} /> Message
+                      </button>
+                      <button
+                        onClick={() => handleViewProfile(person.id)}
+                        className="text-xs font-medium bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-colors"
+                      >
+                        View Profile
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -200,6 +237,7 @@ export default function Search() {
             {filteredPlaces.map((place) => {
               const typeInfo = placeTypes[place.type] || {};
               const PlaceIcon = placeTypeIcons[place.type] || MapPin;
+              const owner = getUserById(place.addedBy);
               return (
                 <div key={place.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
                   <div className="flex items-start gap-3">
@@ -212,10 +250,12 @@ export default function Search() {
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <h3 className="font-medium text-sm text-slate-800">{place.name}</h3>
-                        <div className="flex items-center gap-1">
-                          <Star size={12} className="text-amber-400 fill-amber-400" />
-                          <span className="text-xs font-medium text-slate-600">{place.rating}</span>
-                        </div>
+                        {place.rating > 0 && (
+                          <div className="flex items-center gap-1">
+                            <Star size={12} className="text-amber-400 fill-amber-400" />
+                            <span className="text-xs font-medium text-slate-600">{place.rating}</span>
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: (typeInfo.color || '#64748b') + '20', color: typeInfo.color || '#64748b' }}>
@@ -224,6 +264,17 @@ export default function Search() {
                         {place.cost && <span className="text-xs text-slate-400">{place.cost}</span>}
                       </div>
                       <p className="text-xs text-slate-500 mt-1">{place.description}</p>
+                      {place.address && <p className="text-[10px] text-slate-400 mt-1">{place.address}</p>}
+                      {place.googleLink && (
+                        <a href={place.googleLink} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 underline">Google Maps</a>
+                      )}
+                      {owner && owner.id !== user.id && (
+                        <div className="flex gap-2 mt-2">
+                          <button onClick={() => handleMessage(owner.id)} className="flex items-center gap-1 text-[10px] font-medium text-emerald-600 hover:underline">
+                            <MessageCircle size={10} /> Message {owner.name}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -231,6 +282,51 @@ export default function Search() {
             })}
             {filteredPlaces.length === 0 && (
               <p className="text-center text-sm text-slate-400 py-8">No places found</p>
+            )}
+          </div>
+        )}
+
+        {/* Vehicles */}
+        {activeTab === 'vehicles' && (
+          <div className="space-y-3">
+            {filteredVehicles.map((v) => {
+              const owner = getUserById(v.owner);
+              const vType = vehicleTypes[v.type] || {};
+              return (
+                <div key={v.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-sm text-slate-800">{v.name}</h3>
+                      <p className="text-xs text-slate-400 mt-0.5">Owned by {owner?.name || 'Unknown'}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: (vType.color || '#64748b') + '20', color: vType.color || '#64748b' }}>
+                          {vType.label || v.type}
+                        </span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${v.available ? 'bg-emerald-100 text-emerald-700' : 'bg-red-50 text-red-500'}`}>
+                          {v.available ? 'Available' : 'Not Available'}
+                        </span>
+                        <span className="text-xs text-slate-400">{v.cost}</span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">{v.description}</p>
+                      {v.address && <p className="text-[10px] text-slate-400 mt-1">{v.address}</p>}
+                      {owner && owner.id !== user.id && (
+                        <div className="flex gap-2 mt-2">
+                          <button onClick={() => handleMessage(owner.id)} className="flex items-center gap-1 text-xs font-medium bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition-colors">
+                            <MessageCircle size={12} /> Message {owner.name}
+                          </button>
+                          <button onClick={() => handleViewProfile(owner.id)} className="text-xs font-medium bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-colors">
+                            Profile
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <Car size={20} className="text-slate-300 shrink-0" />
+                  </div>
+                </div>
+              );
+            })}
+            {filteredVehicles.length === 0 && (
+              <p className="text-center text-sm text-slate-400 py-8">No vehicles found</p>
             )}
           </div>
         )}
@@ -243,7 +339,7 @@ export default function Search() {
               return (
                 <div key={item.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
                   <div className="flex items-start justify-between">
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-medium text-sm text-slate-800">{item.name}</h3>
                       <p className="text-xs text-slate-400 mt-0.5">Owned by {owner?.name || 'Unknown'}</p>
                       <p className="text-xs text-slate-500 mt-1">{item.description}</p>
@@ -253,8 +349,18 @@ export default function Search() {
                         </span>
                         <span className="text-xs text-slate-400">{item.cost}</span>
                       </div>
+                      {owner && owner.id !== user.id && (
+                        <div className="flex gap-2 mt-2">
+                          <button onClick={() => handleMessage(owner.id)} className="flex items-center gap-1 text-xs font-medium bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition-colors">
+                            <MessageCircle size={12} /> Message {owner.name}
+                          </button>
+                          <button onClick={() => handleViewProfile(owner.id)} className="text-xs font-medium bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-colors">
+                            Profile
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <Package size={20} className="text-slate-300" />
+                    <Package size={20} className="text-slate-300 shrink-0" />
                   </div>
                 </div>
               );
