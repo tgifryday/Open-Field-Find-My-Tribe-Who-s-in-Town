@@ -17,7 +17,7 @@ export default function UserProfile() {
   const profileUser = getUserById(userId);
   if (!profileUser) {
     return (
-      <div className="pb-24 pt-[76px]">
+      <div className="pb-28 pt-16">
         <div className="px-4 py-4">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-slate-600 mb-4">
             <ArrowLeft size={16} /> Back
@@ -49,7 +49,7 @@ export default function UserProfile() {
   ];
 
   return (
-    <div className="pb-24 pt-[76px]">
+    <div className="pb-28 pt-16">
       <div className="px-4 py-4 space-y-5">
         {/* Back Button */}
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-slate-600">

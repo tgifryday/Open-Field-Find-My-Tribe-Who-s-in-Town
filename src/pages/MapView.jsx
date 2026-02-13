@@ -79,8 +79,8 @@ export default function MapView() {
   };
 
   return (
-    <div className="pb-24 pt-[76px]">
-      <div className="px-4 py-3 space-y-3">
+    <div className="pb-28 pt-16">
+      <div className="px-5 py-4 space-y-3">
         {/* Filter Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-1">
           {filters.map((f) => (

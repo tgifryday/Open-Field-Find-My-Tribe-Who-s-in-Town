@@ -40,7 +40,7 @@ export default function Tribes() {
     const isAdmin = tribe.admins.includes(user.id);
 
     return (
-      <div className="pb-24 pt-[76px]">
+      <div className="pb-28 pt-16">
         <div className="px-4 py-4 space-y-4">
           <button onClick={() => { setView('list'); setSelectedTribe(null); }} className="text-sm text-emerald-600 font-medium">
             &larr; Back to Tribes
@@ -129,7 +129,7 @@ export default function Tribes() {
   }
 
   return (
-    <div className="pb-24 pt-[76px]">
+    <div className="pb-28 pt-16">
       <div className="px-4 py-4 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-slate-800">My Tribes</h2>
@@ -194,8 +194,8 @@ export default function Tribes() {
 
       {/* Create Tribe Modal */}
       {showCreate && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b border-slate-100">
               <h3 className="font-bold text-lg text-slate-800">Create a Tribe</h3>
               <button onClick={() => setShowCreate(false)} className="p-1 rounded-lg hover:bg-slate-100">

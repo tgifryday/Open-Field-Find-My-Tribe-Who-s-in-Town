@@ -42,9 +42,9 @@ export default function Messages() {
     const otherUser = otherUserId ? getUserById(otherUserId) : null;
 
     return (
-      <div className="pb-24 pt-[76px] flex flex-col h-[calc(100vh-0px)]">
+      <div className="pb-28 pt-16 flex flex-col h-[calc(100vh-0px)]">
         {/* Thread Header */}
-        <div className="fixed top-14 left-0 right-0 bg-white border-b border-slate-200 z-40 px-4 py-3">
+        <div className="fixed top-12 left-0 right-0 bg-white/80 backdrop-blur-xl border-b border-slate-100 z-40 px-5 py-3">
           <div className="max-w-lg mx-auto flex items-center gap-3">
             <button onClick={() => setSelectedThread(null)} className="p-1 rounded-lg hover:bg-slate-100">
               <ArrowLeft size={20} className="text-slate-600" />
@@ -141,8 +141,8 @@ export default function Messages() {
   }
 
   return (
-    <div className="pb-24 pt-[76px]">
-      <div className="px-4 py-4 space-y-4">
+    <div className="pb-28 pt-16">
+      <div className="px-5 py-5 space-y-5">
         <h2 className="text-xl font-bold text-slate-800">Messages</h2>
 
         {/* Direct Messages */}

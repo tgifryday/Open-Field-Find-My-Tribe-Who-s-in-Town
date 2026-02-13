@@ -111,8 +111,8 @@ export default function Profile() {
   const recommendationTypes = ['restaurant', 'cafe', 'recommendation', 'store'];
 
   return (
-    <div className="pb-24 pt-[76px]">
-      <div className="px-4 py-4 space-y-5">
+    <div className="pb-28 pt-16">
+      <div className="px-5 py-5 space-y-6">
         {/* Profile Card */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 text-center">
           <Avatar name={user.name} size="xl" className="mx-auto" />
@@ -165,30 +165,30 @@ export default function Profile() {
           </div>
 
           {/* Create Buttons */}
-          <div className="grid grid-cols-2 gap-2 mb-4">
+          <div className="grid grid-cols-2 gap-3 mb-4">
             <button
               onClick={() => setShowCreateModal('place')}
-              className="flex items-center gap-2 p-3 rounded-xl border border-dashed border-emerald-300 text-emerald-600 text-xs font-medium hover:bg-emerald-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-3.5 rounded-xl border border-dashed border-emerald-300 text-emerald-600 text-sm font-medium hover:bg-emerald-50 transition-colors"
             >
-              <Plus size={14} /> Add Place
+              <Plus size={16} /> Add Place
             </button>
             <button
               onClick={() => setShowCreateModal('vehicle')}
-              className="flex items-center gap-2 p-3 rounded-xl border border-dashed border-blue-300 text-blue-600 text-xs font-medium hover:bg-blue-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-3.5 rounded-xl border border-dashed border-blue-300 text-blue-600 text-sm font-medium hover:bg-blue-50 transition-colors"
             >
-              <Plus size={14} /> Add Vehicle
+              <Plus size={16} /> Add Vehicle
             </button>
             <button
               onClick={() => setShowCreateModal('gear')}
-              className="flex items-center gap-2 p-3 rounded-xl border border-dashed border-orange-300 text-orange-600 text-xs font-medium hover:bg-orange-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-3.5 rounded-xl border border-dashed border-orange-300 text-orange-600 text-sm font-medium hover:bg-orange-50 transition-colors"
             >
-              <Plus size={14} /> Add Gear
+              <Plus size={16} /> Add Gear
             </button>
             <button
               onClick={() => setShowCreateModal('recommendation')}
-              className="flex items-center gap-2 p-3 rounded-xl border border-dashed border-amber-300 text-amber-600 text-xs font-medium hover:bg-amber-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-3.5 rounded-xl border border-dashed border-amber-300 text-amber-600 text-sm font-medium hover:bg-amber-50 transition-colors"
             >
-              <Plus size={14} /> Add Recommendation
+              <Plus size={16} /> Recommend
             </button>
           </div>
 
@@ -321,8 +321,8 @@ export default function Profile() {
 
       {/* Create Place Modal */}
       {showCreateModal === 'place' && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
-          <div className="bg-white rounded-t-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-5 space-y-4">
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg text-slate-800">Add a Place</h3>
               <button onClick={resetForm} className="p-1 rounded-lg hover:bg-slate-100"><X size={20} /></button>
@@ -368,8 +368,8 @@ export default function Profile() {
 
       {/* Create Vehicle Modal */}
       {showCreateModal === 'vehicle' && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
-          <div className="bg-white rounded-t-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-5 space-y-4">
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg text-slate-800">Add a Vehicle</h3>
               <button onClick={resetForm} className="p-1 rounded-lg hover:bg-slate-100"><X size={20} /></button>
@@ -420,8 +420,8 @@ export default function Profile() {
 
       {/* Create Gear Modal */}
       {showCreateModal === 'gear' && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
-          <div className="bg-white rounded-t-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-5 space-y-4">
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg text-slate-800">Add Gear</h3>
               <button onClick={resetForm} className="p-1 rounded-lg hover:bg-slate-100"><X size={20} /></button>
@@ -450,8 +450,8 @@ export default function Profile() {
 
       {/* Create Recommendation Modal */}
       {showCreateModal === 'recommendation' && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
-          <div className="bg-white rounded-t-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-5 space-y-4">
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg text-slate-800">Add a Recommendation</h3>
               <button onClick={resetForm} className="p-1 rounded-lg hover:bg-slate-100"><X size={20} /></button>

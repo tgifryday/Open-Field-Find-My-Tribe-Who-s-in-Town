@@ -110,17 +110,17 @@ export default function Search() {
   }, [allEvents, query, getLocationById]);
 
   return (
-    <div className="pb-24 pt-[76px]">
-      <div className="px-4 py-4 space-y-4">
+    <div className="pb-28 pt-16">
+      <div className="px-5 py-5 space-y-5">
         {/* Search Bar */}
         <div className="relative">
-          <SearchIcon size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <SearchIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search people, places, vehicles, gear, events..."
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white"
+            className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white"
           />
         </div>
 
@@ -130,7 +130,7 @@ export default function Search() {
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === id ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200'
               }`}
             >
@@ -201,13 +201,13 @@ export default function Search() {
                       <div className="flex gap-2 mt-3">
                         <button
                           onClick={() => handleMessage(person.id)}
-                          className="flex items-center gap-1 text-xs font-medium bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition-colors"
+                          className="flex items-center gap-1.5 text-sm font-medium bg-emerald-600 text-white px-4 py-2 rounded-xl hover:bg-emerald-700 transition-colors"
                         >
-                          <MessageCircle size={12} /> Message
+                          <MessageCircle size={14} /> Message
                         </button>
                         <button
                           onClick={() => handleViewProfile(person.id)}
-                          className="text-xs font-medium bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-colors"
+                          className="text-sm font-medium bg-slate-100 text-slate-700 px-4 py-2 rounded-xl hover:bg-slate-200 transition-colors"
                         >
                           View Profile
                         </button>
