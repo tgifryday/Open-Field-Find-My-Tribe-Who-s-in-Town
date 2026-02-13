@@ -8,18 +8,18 @@ export default function Header() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md border-b border-slate-200 z-50">
-      <div className="max-w-lg mx-auto flex items-center justify-between h-14 px-4">
+    <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-b border-slate-100 z-50">
+      <div className="max-w-lg mx-auto flex items-center justify-between h-12 px-5">
         <div className="flex items-center gap-2">
-          <span className="text-xl">🌿</span>
-          <h1 className="text-lg font-bold text-emerald-700">Open Field</h1>
+          <span className="text-lg">🌿</span>
+          <h1 className="text-base font-bold text-emerald-700 tracking-tight">Open Field</h1>
         </div>
         <div className="relative">
           <button
             onClick={() => setShowNotifs(!showNotifs)}
-            className="relative p-2 rounded-full hover:bg-slate-100 transition-colors"
+            className="relative p-2.5 rounded-full hover:bg-slate-100/80 transition-colors"
           >
-            <Bell size={20} className="text-slate-600" />
+            <Bell size={18} className="text-slate-500" />
             {unreadCount > 0 && (
               <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 {unreadCount}
