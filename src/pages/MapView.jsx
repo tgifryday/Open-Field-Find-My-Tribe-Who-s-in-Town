@@ -46,11 +46,17 @@ function createEmojiIcon(emoji, bgColor) {
 const filters = ['all', 'people', 'places', 'vehicles', 'gear', 'events'];
 
 export default function MapView() {
-  const { user, allUsers, allPlaces, allVehicles, allGear, allEvents, startDirectMessage, getUserById } = useApp();
+  const {
+    user, allUsers, allPlaces, allVehicles, allGear, allEvents,
+    startDirectMessage, getUserById,
+    getUserCurrentLocation, getLocationById, getItemLocation,
+  } = useApp();
   const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
   const [selectedPlaceType, setSelectedPlaceType] = useState('all');
-  const center = [user.location.lat, user.location.lng];
+
+  const currentUserLoc = getUserCurrentLocation(user.id);
+  const center = currentUserLoc ? [currentUserLoc.lat, currentUserLoc.lng] : [34.05, -118.25];
 
   const otherUsers = allUsers.filter((u) => u.id !== user.id);
 
@@ -73,7 +79,7 @@ export default function MapView() {
   };
 
   return (
-    <div className="pb-20 pt-16">
+    <div className="pb-24 pt-[76px]">
       <div className="px-4 py-3 space-y-3">
         {/* Filter Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-1">
@@ -125,81 +131,92 @@ export default function MapView() {
             />
 
             {/* Current user */}
-            <Marker
-              position={[user.location.lat, user.location.lng]}
-              icon={L.divIcon({
-                className: 'custom-marker',
-                html: '<div style="background:#10b981;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 3px #10b981,0 2px 8px rgba(0,0,0,0.3);"></div>',
-                iconSize: [16, 16],
-                iconAnchor: [8, 8],
-              })}
-            >
-              <Popup>
-                <div className="text-center">
-                  <strong>You are here</strong>
-                  <br />
-                  <span className="text-xs">{user.location.city}, {user.location.state}</span>
-                </div>
-              </Popup>
-            </Marker>
+            {currentUserLoc && (
+              <Marker
+                position={[currentUserLoc.lat, currentUserLoc.lng]}
+                icon={L.divIcon({
+                  className: 'custom-marker',
+                  html: '<div style="background:#10b981;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 3px #10b981,0 2px 8px rgba(0,0,0,0.3);"></div>',
+                  iconSize: [16, 16],
+                  iconAnchor: [8, 8],
+                })}
+              >
+                <Popup>
+                  <div className="text-center">
+                    <strong>You are here</strong>
+                    <br />
+                    <span className="text-xs">{currentUserLoc.city}, {currentUserLoc.state}</span>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
 
             {/* 10-mile radius circle */}
-            <Circle
-              center={center}
-              radius={16093}
-              pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.05, weight: 1, dashArray: '5,5' }}
-            />
+            {currentUserLoc && (
+              <Circle
+                center={center}
+                radius={16093}
+                pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.05, weight: 1, dashArray: '5,5' }}
+              />
+            )}
 
             {/* Other users */}
             {(filter === 'all' || filter === 'people') &&
-              otherUsers.map((u) => (
-                <Marker
-                  key={u.id}
-                  position={[u.location.lat, u.location.lng]}
-                  icon={createPersonIcon(u.name)}
-                >
-                  <Popup>
-                    <div className="text-center min-w-[160px]">
-                      <strong>{u.name}</strong>
-                      <br />
-                      <span className="text-xs text-gray-500">{u.location.city}</span>
-                      <br />
-                      <span className="text-xs">{u.distance} mi away</span>
-                      <br />
-                      <div className="flex flex-wrap gap-1 mt-1 justify-center">
-                        {u.interests.slice(0, 3).map((i) => (
-                          <span key={i} className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">{i}</span>
-                        ))}
+              otherUsers.map((u) => {
+                const loc = getUserCurrentLocation(u.id);
+                if (!loc) return null;
+                return (
+                  <Marker
+                    key={u.id}
+                    position={[loc.lat, loc.lng]}
+                    icon={createPersonIcon(u.name)}
+                  >
+                    <Popup>
+                      <div className="text-center min-w-[160px]">
+                        <strong>{u.name}</strong>
+                        <br />
+                        <span className="text-xs text-gray-500">{loc.city}</span>
+                        <br />
+                        <span className="text-xs">{u.distance} mi away</span>
+                        <br />
+                        <div className="flex flex-wrap gap-1 mt-1 justify-center">
+                          {u.interests.slice(0, 3).map((i) => (
+                            <span key={i} className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">{i}</span>
+                          ))}
+                        </div>
+                        <div className="flex gap-2 mt-2 justify-center">
+                          <button
+                            onClick={() => handleMessage(u.id)}
+                            className="text-[11px] font-medium bg-emerald-600 text-white px-3 py-1 rounded-lg hover:bg-emerald-700 transition-colors"
+                          >
+                            Message
+                          </button>
+                          <button
+                            onClick={() => handleViewProfile(u.id)}
+                            className="text-[11px] font-medium bg-slate-100 text-slate-700 px-3 py-1 rounded-lg hover:bg-slate-200 transition-colors"
+                          >
+                            Profile
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex gap-2 mt-2 justify-center">
-                        <button
-                          onClick={() => handleMessage(u.id)}
-                          className="text-[11px] font-medium bg-emerald-600 text-white px-3 py-1 rounded-lg hover:bg-emerald-700 transition-colors"
-                        >
-                          Message
-                        </button>
-                        <button
-                          onClick={() => handleViewProfile(u.id)}
-                          className="text-[11px] font-medium bg-slate-100 text-slate-700 px-3 py-1 rounded-lg hover:bg-slate-200 transition-colors"
-                        >
-                          Profile
-                        </button>
-                      </div>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
+                    </Popup>
+                  </Marker>
+                );
+              })}
 
             {/* Places */}
             {(filter === 'all' || filter === 'places') &&
               allPlaces
                 .filter((p) => selectedPlaceType === 'all' || p.type === selectedPlaceType)
                 .map((place) => {
+                  const loc = getLocationById(place.locationId);
+                  if (!loc) return null;
                   const owner = getUserById(place.addedBy);
+                  const inUseUser = place.inUseBy ? getUserById(place.inUseBy) : null;
                   return (
                     <Marker
                       key={place.id}
-                      position={[place.lat, place.lng]}
+                      position={[loc.lat, loc.lng]}
                       icon={createColorIcon(placeTypes[place.type]?.color || '#64748b')}
                     >
                       <Popup>
@@ -210,10 +227,16 @@ export default function MapView() {
                           {place.cost && <span className="text-xs ml-1">&middot; {place.cost}</span>}
                           <br />
                           <span className="text-xs text-gray-500">{place.description}</span>
-                          {place.address && (
+                          {loc.address && (
                             <>
                               <br />
-                              <span className="text-[10px] text-gray-400">{place.address}</span>
+                              <span className="text-[10px] text-gray-400">{loc.address}</span>
+                            </>
+                          )}
+                          {inUseUser && (
+                            <>
+                              <br />
+                              <span className="text-[10px] font-medium text-blue-600">In use by {inUseUser.name}</span>
                             </>
                           )}
                           {place.googleLink && (
@@ -241,12 +264,15 @@ export default function MapView() {
             {/* Vehicles */}
             {(filter === 'all' || filter === 'vehicles') &&
               allVehicles.map((v) => {
+                const loc = getItemLocation(v);
+                if (!loc) return null;
                 const owner = getUserById(v.owner);
+                const borrower = v.borrowedBy ? getUserById(v.borrowedBy) : null;
                 const vType = vehicleTypes[v.type] || {};
                 return (
                   <Marker
                     key={v.id}
-                    position={[v.lat, v.lng]}
+                    position={[loc.lat, loc.lng]}
                     icon={createEmojiIcon(v.type === 'bike' ? '\u{1F6B2}' : v.type === 'van' ? '\u{1F690}' : v.type === 'truck' ? '\u{1F69A}' : v.type === 'scooter' ? '\u{1F6F4}' : '\u{1F697}', vType.color || '#3b82f6')}
                   >
                     <Popup>
@@ -261,12 +287,18 @@ export default function MapView() {
                         <span className={`text-[10px] font-medium ${v.available ? 'text-emerald-600' : 'text-red-500'}`}>
                           {v.available ? 'Available' : 'Not Available'}
                         </span>
-                        <br />
-                        <span className="text-xs text-gray-500">{v.description}</span>
-                        {v.address && (
+                        {borrower && (
                           <>
                             <br />
-                            <span className="text-[10px] text-gray-400">{v.address}</span>
+                            <span className="text-[10px] font-medium text-blue-600">Borrowed by {borrower.name}</span>
+                          </>
+                        )}
+                        <br />
+                        <span className="text-xs text-gray-500">{v.description}</span>
+                        {loc.address && (
+                          <>
+                            <br />
+                            <span className="text-[10px] text-gray-400">{loc.address}</span>
                           </>
                         )}
                         {owner && owner.id !== user.id && (
@@ -293,69 +325,80 @@ export default function MapView() {
 
             {/* Gear */}
             {(filter === 'all' || filter === 'gear') &&
-              allGear
-                .filter((g) => g.lat && g.lng)
-                .map((g) => {
-                  const owner = getUserById(g.owner);
-                  return (
-                    <Marker
-                      key={g.id}
-                      position={[g.lat, g.lng]}
-                      icon={createEmojiIcon('\u{1F392}', '#f97316')}
-                    >
-                      <Popup>
-                        <div className="min-w-[160px]">
-                          <strong>{g.name}</strong>
-                          <br />
-                          <span className="text-xs">{g.cost}</span>
-                          <span className={`text-[10px] ml-2 font-medium ${g.available ? 'text-emerald-600' : 'text-red-500'}`}>
-                            {g.available ? 'Available' : 'In Use'}
-                          </span>
-                          <br />
-                          <span className="text-xs text-gray-500">{g.description}</span>
-                          {owner && owner.id !== user.id && (
-                            <div className="flex gap-2 mt-2">
-                              <button
-                                onClick={() => handleMessageOwner(owner.id)}
-                                className="text-[11px] font-medium bg-emerald-600 text-white px-3 py-1 rounded-lg hover:bg-emerald-700 transition-colors"
-                              >
-                                Message {owner.name}
-                              </button>
-                              <button
-                                onClick={() => handleViewProfile(owner.id)}
-                                className="text-[11px] font-medium bg-slate-100 text-slate-700 px-3 py-1 rounded-lg hover:bg-slate-200 transition-colors"
-                              >
-                                Profile
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </Popup>
-                    </Marker>
-                  );
-                })}
+              allGear.map((g) => {
+                const loc = getItemLocation(g);
+                if (!loc) return null;
+                const owner = getUserById(g.owner);
+                const borrower = g.borrowedBy ? getUserById(g.borrowedBy) : null;
+                return (
+                  <Marker
+                    key={g.id}
+                    position={[loc.lat, loc.lng]}
+                    icon={createEmojiIcon('\u{1F392}', '#f97316')}
+                  >
+                    <Popup>
+                      <div className="min-w-[160px]">
+                        <strong>{g.name}</strong>
+                        <br />
+                        <span className="text-xs">{g.cost}</span>
+                        <span className={`text-[10px] ml-2 font-medium ${g.available ? 'text-emerald-600' : 'text-red-500'}`}>
+                          {g.available ? 'Available' : 'In Use'}
+                        </span>
+                        {borrower && (
+                          <>
+                            <br />
+                            <span className="text-[10px] font-medium text-blue-600">Borrowed by {borrower.name}</span>
+                          </>
+                        )}
+                        <br />
+                        <span className="text-xs text-gray-500">{g.description}</span>
+                        {owner && owner.id !== user.id && (
+                          <div className="flex gap-2 mt-2">
+                            <button
+                              onClick={() => handleMessageOwner(owner.id)}
+                              className="text-[11px] font-medium bg-emerald-600 text-white px-3 py-1 rounded-lg hover:bg-emerald-700 transition-colors"
+                            >
+                              Message {owner.name}
+                            </button>
+                            <button
+                              onClick={() => handleViewProfile(owner.id)}
+                              className="text-[11px] font-medium bg-slate-100 text-slate-700 px-3 py-1 rounded-lg hover:bg-slate-200 transition-colors"
+                            >
+                              Profile
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </Popup>
+                  </Marker>
+                );
+              })}
 
             {/* Events */}
             {(filter === 'all' || filter === 'events') &&
-              allEvents.map((event) => (
-                <Marker
-                  key={event.id}
-                  position={[event.lat, event.lng]}
-                  icon={createColorIcon('#f59e0b')}
-                >
-                  <Popup>
-                    <div className="min-w-[140px]">
-                      <strong>{event.name}</strong>
-                      <br />
-                      <span className="text-xs">{event.date} at {event.time}</span>
-                      <br />
-                      <span className="text-xs text-gray-500">{event.location}</span>
-                      <br />
-                      <span className="text-xs">{event.attendees} attending</span>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
+              allEvents.map((event) => {
+                const loc = getLocationById(event.locationId);
+                if (!loc) return null;
+                return (
+                  <Marker
+                    key={event.id}
+                    position={[loc.lat, loc.lng]}
+                    icon={createColorIcon('#f59e0b')}
+                  >
+                    <Popup>
+                      <div className="min-w-[140px]">
+                        <strong>{event.name}</strong>
+                        <br />
+                        <span className="text-xs">{event.date} at {event.time}</span>
+                        <br />
+                        <span className="text-xs text-gray-500">{loc.name}</span>
+                        <br />
+                        <span className="text-xs">{event.attendees} attending</span>
+                      </div>
+                    </Popup>
+                  </Marker>
+                );
+              })}
           </MapContainer>
         </div>
       </div>

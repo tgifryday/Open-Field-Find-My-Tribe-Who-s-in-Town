@@ -1,5 +1,5 @@
-import { createContext, useContext, useState } from 'react';
-import { currentUser, users, tribes, places, gear, vehicles, events, callouts, messages } from '../data/mockData';
+import { createContext, useContext, useState, useCallback } from 'react';
+import { currentUser, users, tribes, places, gear, vehicles, events, callouts, messages, locations } from '../data/mockData';
 
 const AppContext = createContext();
 
@@ -14,6 +14,7 @@ export function AppProvider({ children }) {
   const [allEvents] = useState(events);
   const [allCallouts, setAllCallouts] = useState(callouts);
   const [allMessages, setAllMessages] = useState(messages);
+  const [allLocations, setAllLocations] = useState(locations);
   const [notifications, setNotifications] = useState([
     { id: 'n1', type: 'callout', message: 'Eli Brooks is looking for people in Los Angeles', time: '2h ago', read: false, calloutId: 'callout-1' },
     { id: 'n2', type: 'event', message: 'Sunset Yoga at Venice is tomorrow', time: '4h ago', read: false },
@@ -22,6 +23,42 @@ export function AppProvider({ children }) {
 
   const login = () => setIsLoggedIn(true);
   const logout = () => setIsLoggedIn(false);
+
+  // Location helpers
+  const getLocationById = useCallback((id) => {
+    return allLocations.find((l) => l.id === id) || null;
+  }, [allLocations]);
+
+  const getUserById = (id) => allUsers.find((u) => u.id === id);
+  const getTribeById = (id) => allTribes.find((t) => t.id === id);
+
+  const getUserCurrentLocation = useCallback((userId) => {
+    const u = allUsers.find((usr) => usr.id === userId) || (userId === user.id ? user : null);
+    if (!u) return null;
+    if (u.useLiveLocation && u.liveLocation) {
+      const loc = allLocations.find((l) => l.id === u.currentLocationId);
+      return {
+        lat: u.liveLocation.lat,
+        lng: u.liveLocation.lng,
+        city: loc?.city || 'Unknown',
+        state: loc?.state || '',
+        name: loc?.name || '',
+      };
+    }
+    const loc = allLocations.find((l) => l.id === u.currentLocationId);
+    if (!loc) return null;
+    return { lat: loc.lat, lng: loc.lng, city: loc.city, state: loc.state, name: loc.name };
+  }, [allUsers, allLocations, user]);
+
+  // Resolve position for a place/vehicle/gear item
+  const getItemLocation = useCallback((item) => {
+    if (item.borrowedBy) {
+      return getUserCurrentLocation(item.borrowedBy);
+    }
+    const loc = allLocations.find((l) => l.id === item.locationId);
+    if (!loc) return null;
+    return { lat: loc.lat, lng: loc.lng, city: loc.city, state: loc.state, name: loc.name, address: loc.address };
+  }, [allLocations, getUserCurrentLocation]);
 
   const addCallout = (callout) => {
     setAllCallouts((prev) => [{ ...callout, id: `callout-${Date.now()}`, responses: [], createdAt: new Date().toISOString() }, ...prev]);
@@ -72,39 +109,30 @@ export function AppProvider({ children }) {
     return allTribes.filter((t) => t.members.includes(user.id));
   };
 
-  const getUserById = (id) => allUsers.find((u) => u.id === id);
-  const getTribeById = (id) => allTribes.find((t) => t.id === id);
+  // Location CRUD
+  const addLocation = (loc) => {
+    const newLoc = { ...loc, id: `loc-${Date.now()}`, createdBy: user.id };
+    setAllLocations((prev) => [...prev, newLoc]);
+    return newLoc;
+  };
 
   // Place CRUD
   const addPlace = (place) => {
-    const newPlace = {
-      ...place,
-      id: `place-${Date.now()}`,
-      addedBy: user.id,
-      rating: 0,
-    };
+    const newPlace = { ...place, id: `place-${Date.now()}`, addedBy: user.id, rating: 0, inUseBy: null };
     setAllPlaces((prev) => [...prev, newPlace]);
     return newPlace;
   };
 
   // Vehicle CRUD
   const addVehicle = (vehicle) => {
-    const newVehicle = {
-      ...vehicle,
-      id: `vehicle-${Date.now()}`,
-      owner: user.id,
-    };
+    const newVehicle = { ...vehicle, id: `vehicle-${Date.now()}`, owner: user.id, borrowedBy: null };
     setAllVehicles((prev) => [...prev, newVehicle]);
     return newVehicle;
   };
 
   // Gear CRUD
   const addGear = (gearItem) => {
-    const newGear = {
-      ...gearItem,
-      id: `gear-${Date.now()}`,
-      owner: user.id,
-    };
+    const newGear = { ...gearItem, id: `gear-${Date.now()}`, owner: user.id, borrowedBy: null };
     setAllGear((prev) => [...prev, newGear]);
     return newGear;
   };
@@ -113,13 +141,10 @@ export function AppProvider({ children }) {
   const startDirectMessage = (otherUserId) => {
     const otherUser = getUserById(otherUserId);
     if (!otherUser) return null;
-
-    // Check if DM thread already exists
     const existing = allMessages.find(
       (t) => t.type === 'direct' && t.members.includes(user.id) && t.members.includes(otherUserId)
     );
     if (existing) return existing.id;
-
     const newThread = {
       id: `dm-${Date.now()}`,
       name: otherUser.name,
@@ -135,20 +160,26 @@ export function AppProvider({ children }) {
   const getUserPlaces = (userId) => allPlaces.filter((p) => p.addedBy === userId);
   const getUserVehicles = (userId) => allVehicles.filter((v) => v.owner === userId);
   const getUserGear = (userId) => allGear.filter((g) => g.owner === userId);
+  const getUserLocations = (userId) => {
+    const u = allUsers.find((usr) => usr.id === userId) || (userId === user.id ? user : null);
+    if (!u) return [];
+    return (u.locationIds || []).map((id) => allLocations.find((l) => l.id === id)).filter(Boolean);
+  };
 
   return (
     <AppContext.Provider
       value={{
         user, setUser, isLoggedIn, login, logout,
-        allUsers, allTribes, allPlaces, allGear, allVehicles, allEvents,
+        allUsers, allTribes, allPlaces, allGear, allVehicles, allEvents, allLocations,
         allCallouts, addCallout, respondToCallout,
         allMessages, sendMessage,
         notifications, markNotificationRead,
         getNearbyUsers, getUserTribes, getUserById, getTribeById,
         createTribe,
-        addPlace, addVehicle, addGear,
+        getLocationById, getUserCurrentLocation, getItemLocation,
+        addLocation, addPlace, addVehicle, addGear,
         startDirectMessage,
-        getUserPlaces, getUserVehicles, getUserGear,
+        getUserPlaces, getUserVehicles, getUserGear, getUserLocations,
       }}
     >
       {children}

@@ -5,15 +5,18 @@ import { placeTypes, vehicleTypes } from '../data/mockData';
 import Avatar from '../components/Avatar';
 
 export default function Profile() {
-  const { user, logout, getUserTribes, getUserPlaces, getUserVehicles, getUserGear, addPlace, addVehicle, addGear } = useApp();
+  const {
+    user, logout, getUserTribes, getUserPlaces, getUserVehicles, getUserGear,
+    addPlace, addVehicle, addGear, addLocation, getUserCurrentLocation, getLocationById,
+  } = useApp();
   const [activeSection, setActiveSection] = useState(null);
-  const [showCreateModal, setShowCreateModal] = useState(null); // 'place', 'vehicle', 'gear', 'recommendation'
+  const [showCreateModal, setShowCreateModal] = useState(null);
   const userTribes = getUserTribes();
   const userPlaces = getUserPlaces(user.id);
   const userVehicles = getUserVehicles(user.id);
   const userGear = getUserGear(user.id);
+  const currentLoc = getUserCurrentLocation(user.id);
 
-  // Form states
   const [formData, setFormData] = useState({});
 
   const resetForm = () => {
@@ -21,16 +24,27 @@ export default function Profile() {
     setShowCreateModal(null);
   };
 
+  const createLocationAndGetId = () => {
+    const loc = addLocation({
+      name: formData.locationName || formData.name || 'My Location',
+      address: formData.address || '',
+      lat: parseFloat(formData.lat),
+      lng: parseFloat(formData.lng),
+      city: formData.city || '',
+      state: formData.state || '',
+    });
+    return loc.id;
+  };
+
   const handleCreatePlace = () => {
     if (!formData.name || !formData.lat || !formData.lng) return;
+    const locationId = createLocationAndGetId();
     addPlace({
       name: formData.name,
       type: formData.type || 'room',
-      lat: parseFloat(formData.lat),
-      lng: parseFloat(formData.lng),
+      locationId,
       description: formData.description || '',
       cost: formData.cost || '',
-      address: formData.address || '',
       googleLink: formData.googleLink || '',
     });
     resetForm();
@@ -38,39 +52,43 @@ export default function Profile() {
 
   const handleCreateVehicle = () => {
     if (!formData.name || !formData.lat || !formData.lng) return;
+    const locationId = createLocationAndGetId();
     addVehicle({
       name: formData.name,
       type: formData.type || 'car',
       available: formData.available !== 'false',
       cost: formData.cost || 'free',
       description: formData.description || '',
-      lat: parseFloat(formData.lat),
-      lng: parseFloat(formData.lng),
-      address: formData.address || '',
+      locationId,
     });
     resetForm();
   };
 
   const handleCreateGear = () => {
     if (!formData.name) return;
+    let locationId;
+    if (formData.lat && formData.lng) {
+      locationId = createLocationAndGetId();
+    } else {
+      locationId = user.currentLocationId;
+    }
     addGear({
       name: formData.name,
       available: formData.available !== 'false',
       cost: formData.cost || 'free',
       description: formData.description || '',
-      lat: formData.lat ? parseFloat(formData.lat) : user.location.lat,
-      lng: formData.lng ? parseFloat(formData.lng) : user.location.lng,
+      locationId,
     });
     resetForm();
   };
 
   const handleCreateRecommendation = () => {
     if (!formData.name || !formData.lat || !formData.lng) return;
+    const locationId = createLocationAndGetId();
     addPlace({
       name: formData.name,
       type: formData.type || 'restaurant',
-      lat: parseFloat(formData.lat),
-      lng: parseFloat(formData.lng),
+      locationId,
       description: formData.description || '',
       googleLink: formData.googleLink || '',
     });
@@ -78,26 +96,30 @@ export default function Profile() {
   };
 
   const useMyLocation = () => {
-    setFormData((prev) => ({
-      ...prev,
-      lat: String(user.location.lat),
-      lng: String(user.location.lng),
-    }));
+    if (currentLoc) {
+      setFormData((prev) => ({
+        ...prev,
+        lat: String(currentLoc.lat),
+        lng: String(currentLoc.lng),
+        city: currentLoc.city || '',
+        state: currentLoc.state || '',
+      }));
+    }
   };
 
   const placeTypeOptions = ['room', 'garage', 'yard', 'session-space', 'work', 'sleep', 'shower', 'kitchen', 'park', 'foraging', 'stealth-camping'];
   const recommendationTypes = ['restaurant', 'cafe', 'recommendation', 'store'];
 
   return (
-    <div className="pb-20 pt-16">
-      <div className="px-4 py-4 space-y-4">
+    <div className="pb-24 pt-[76px]">
+      <div className="px-4 py-4 space-y-5">
         {/* Profile Card */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 text-center">
           <Avatar name={user.name} size="xl" className="mx-auto" />
           <h2 className="text-xl font-bold text-slate-800 mt-3">{user.name === 'You' ? 'Explorer' : user.name}</h2>
           <div className="flex items-center justify-center gap-1 text-slate-400 text-sm mt-1">
             <MapPin size={14} />
-            <span>{user.location.city}, {user.location.state}</span>
+            <span>{currentLoc ? `${currentLoc.city}, ${currentLoc.state}` : 'Location unknown'}</span>
           </div>
           <p className="text-sm text-slate-600 mt-3">{user.bio}</p>
 
@@ -205,22 +227,27 @@ export default function Profile() {
             Let your tribes know where you'll be so people can find you or plan meetups.
           </p>
           <div className="space-y-2">
-            {user.futureLocations.map((loc, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
-                <div className="w-10 h-10 rounded-lg bg-blue-100 flex flex-col items-center justify-center shrink-0">
-                  <span className="text-[9px] font-bold text-blue-600">
-                    {new Date(loc.date).toLocaleDateString('en', { month: 'short' })}
-                  </span>
-                  <span className="text-sm font-bold text-blue-700 leading-none">
-                    {new Date(loc.date).getDate()}
-                  </span>
+            {user.futureLocations.map((fl, i) => {
+              const loc = getLocationById(fl.locationId);
+              return (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
+                  <div className="w-10 h-10 rounded-lg bg-blue-100 flex flex-col items-center justify-center shrink-0">
+                    <span className="text-[9px] font-bold text-blue-600">
+                      {new Date(fl.date).toLocaleDateString('en', { month: 'short' })}
+                    </span>
+                    <span className="text-sm font-bold text-blue-700 leading-none">
+                      {new Date(fl.date).getDate()}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm text-slate-700">
+                      {loc ? `${loc.city}, ${loc.state}` : 'Unknown'}
+                    </p>
+                    <p className="text-xs text-slate-400">{new Date(fl.date).toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-sm text-slate-700">{loc.city}, {loc.state}</p>
-                  <p className="text-xs text-slate-400">{new Date(loc.date).toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
             <button className="w-full py-2 text-sm text-emerald-600 font-medium rounded-xl border border-dashed border-emerald-300 hover:bg-emerald-50 transition-colors">
               + Add Future Location
             </button>
@@ -315,6 +342,12 @@ export default function Profile() {
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
               <input type="text" placeholder="Address" value={formData.address || ''} onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              <div className="grid grid-cols-2 gap-2">
+                <input type="text" placeholder="City" value={formData.city || ''} onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                <input type="text" placeholder="State" value={formData.state || ''} onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              </div>
               <div className="flex gap-2">
                 <input type="text" placeholder="Latitude *" value={formData.lat || ''} onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
@@ -361,6 +394,12 @@ export default function Profile() {
               </select>
               <input type="text" placeholder="Address / Pickup location" value={formData.address || ''} onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <div className="grid grid-cols-2 gap-2">
+                <input type="text" placeholder="City" value={formData.city || ''} onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input type="text" placeholder="State" value={formData.state || ''} onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
               <div className="flex gap-2">
                 <input type="text" placeholder="Latitude *" value={formData.lat || ''} onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -431,6 +470,14 @@ export default function Profile() {
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" rows={2} />
               <input type="text" placeholder="Google Maps link" value={formData.googleLink || ''} onChange={(e) => setFormData({ ...formData, googleLink: e.target.value })}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              <input type="text" placeholder="Address" value={formData.address || ''} onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              <div className="grid grid-cols-2 gap-2">
+                <input type="text" placeholder="City" value={formData.city || ''} onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                <input type="text" placeholder="State" value={formData.state || ''} onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
               <div className="flex gap-2">
                 <input type="text" placeholder="Latitude *" value={formData.lat || ''} onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />

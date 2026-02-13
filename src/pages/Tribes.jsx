@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import Avatar from '../components/Avatar';
 
 export default function Tribes() {
-  const { user, getUserTribes, allTribes, getUserById, createTribe } = useApp();
+  const { user, getUserTribes, allTribes, getUserById, createTribe, getUserCurrentLocation } = useApp();
   const [view, setView] = useState('list');
   const [selectedTribe, setSelectedTribe] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
@@ -40,7 +40,7 @@ export default function Tribes() {
     const isAdmin = tribe.admins.includes(user.id);
 
     return (
-      <div className="pb-20 pt-16">
+      <div className="pb-24 pt-[76px]">
         <div className="px-4 py-4 space-y-4">
           <button onClick={() => { setView('list'); setSelectedTribe(null); }} className="text-sm text-emerald-600 font-medium">
             &larr; Back to Tribes
@@ -89,6 +89,7 @@ export default function Tribes() {
                 if (!member) return null;
                 const memberIsOwner = tribe.owners.includes(memberId);
                 const memberIsAdmin = tribe.admins.includes(memberId);
+                const memberLoc = getUserCurrentLocation(memberId);
                 return (
                   <div key={memberId} className="flex items-center gap-3">
                     <Avatar name={member.name} size="sm" />
@@ -108,8 +109,8 @@ export default function Tribes() {
                           </span>
                         )}
                       </div>
-                      {member.location && (
-                        <p className="text-xs text-slate-400">{member.location.city}, {member.location.state}</p>
+                      {memberLoc && (
+                        <p className="text-xs text-slate-400">{memberLoc.city}, {memberLoc.state}</p>
                       )}
                     </div>
                   </div>
@@ -128,7 +129,7 @@ export default function Tribes() {
   }
 
   return (
-    <div className="pb-20 pt-16">
+    <div className="pb-24 pt-[76px]">
       <div className="px-4 py-4 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-slate-800">My Tribes</h2>

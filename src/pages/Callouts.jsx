@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import Avatar from '../components/Avatar';
 
 export default function Callouts() {
-  const { user, allCallouts, addCallout, respondToCallout, getUserTribes } = useApp();
+  const { user, allCallouts, addCallout, respondToCallout, getUserTribes, getUserCurrentLocation } = useApp();
   const [tab, setTab] = useState('incoming');
   const [selectedCallout, setSelectedCallout] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
@@ -14,6 +14,7 @@ export default function Callouts() {
   const userTribes = getUserTribes();
   const incoming = allCallouts.filter((c) => c.senderId !== user.id);
   const outgoing = allCallouts.filter((c) => c.senderId === user.id);
+  const currentLoc = getUserCurrentLocation(user.id);
 
   const handleSendCallout = () => {
     if (!newCallout.tribeId || !newCallout.city || !newCallout.message) return;
@@ -23,7 +24,12 @@ export default function Callouts() {
       senderName: 'You',
       tribeId: newCallout.tribeId,
       tribeName: tribe?.name || 'Unknown',
-      location: { city: newCallout.city, state: newCallout.state, lat: user.location.lat, lng: user.location.lng },
+      location: {
+        city: newCallout.city,
+        state: newCallout.state,
+        lat: currentLoc?.lat || 0,
+        lng: currentLoc?.lng || 0,
+      },
       message: newCallout.message,
     });
     setNewCallout({ tribeId: '', city: '', state: '', message: '' });
@@ -58,7 +64,7 @@ export default function Callouts() {
     const alreadyResponded = callout.responses.some((r) => r.userId === user.id);
 
     return (
-      <div className="pb-20 pt-16">
+      <div className="pb-24 pt-[76px]">
         <div className="px-4 py-4 space-y-4">
           <button onClick={() => setSelectedCallout(null)} className="text-sm text-emerald-600 font-medium">
             &larr; Back to Callouts
@@ -109,7 +115,7 @@ export default function Callouts() {
             )}
           </div>
 
-          {/* Respond (if not mine and not already responded) */}
+          {/* Respond */}
           {!isMine && !alreadyResponded && (
             <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 space-y-3">
               <h3 className="font-semibold text-sm text-slate-700">Respond to this callout</h3>
@@ -149,7 +155,7 @@ export default function Callouts() {
   }
 
   return (
-    <div className="pb-20 pt-16">
+    <div className="pb-24 pt-[76px]">
       <div className="px-4 py-4 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-slate-800">Who's in Town?</h2>

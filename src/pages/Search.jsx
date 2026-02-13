@@ -27,7 +27,10 @@ const placeTypeIcons = {
 };
 
 export default function Search() {
-  const { allUsers, user, allPlaces, allGear, allVehicles, allEvents, getUserById, startDirectMessage } = useApp();
+  const {
+    allUsers, user, allPlaces, allGear, allVehicles, allEvents,
+    getUserById, startDirectMessage, getUserCurrentLocation, getLocationById,
+  } = useApp();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('people');
   const [query, setQuery] = useState('');
@@ -52,17 +55,19 @@ export default function Search() {
     let result = otherUsers;
     if (query) {
       const q = query.toLowerCase();
-      result = result.filter(
-        (u) =>
+      result = result.filter((u) => {
+        const loc = getUserCurrentLocation(u.id);
+        return (
           u.name.toLowerCase().includes(q) ||
           u.interests.some((i) => i.toLowerCase().includes(q)) ||
-          u.location.city.toLowerCase().includes(q)
-      );
+          (loc?.city || '').toLowerCase().includes(q)
+        );
+      });
     }
     result = result.filter((u) => (u.distance || 0) <= maxDistance);
     result.sort((a, b) => (a.distance || 0) - (b.distance || 0));
     return result;
-  }, [otherUsers, query, maxDistance]);
+  }, [otherUsers, query, maxDistance, getUserCurrentLocation]);
 
   const filteredPlaces = useMemo(() => {
     let result = allPlaces;
@@ -96,13 +101,16 @@ export default function Search() {
     let result = allEvents.filter((e) => new Date(e.date) >= new Date());
     if (query) {
       const q = query.toLowerCase();
-      result = result.filter((e) => e.name.toLowerCase().includes(q) || e.location.toLowerCase().includes(q));
+      result = result.filter((e) => {
+        const loc = getLocationById(e.locationId);
+        return e.name.toLowerCase().includes(q) || (loc?.name || '').toLowerCase().includes(q);
+      });
     }
     return result;
-  }, [allEvents, query]);
+  }, [allEvents, query, getLocationById]);
 
   return (
-    <div className="pb-20 pt-16">
+    <div className="pb-24 pt-[76px]">
       <div className="px-4 py-4 space-y-4">
         {/* Search Bar */}
         <div className="relative">
@@ -165,45 +173,50 @@ export default function Search() {
               />
             </div>
 
-            {filteredPeople.map((person) => (
-              <div key={person.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
-                <div className="flex items-start gap-3">
-                  <Avatar name={person.name} size="md" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-medium text-slate-800">{person.name}</h3>
-                      <span className="text-xs text-slate-400">{person.distance} mi</span>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5">{person.location.city}, {person.location.state}</p>
-                    <p className="text-sm text-slate-600 mt-1 line-clamp-2">{person.bio}</p>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {person.interests.map((i) => (
-                        <span key={i} className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full">{i}</span>
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-1 mt-2">
-                      <Star size={12} className="text-amber-400 fill-amber-400" />
-                      <span className="text-xs font-medium text-slate-600">{person.reputation}</span>
-                      <span className="text-xs text-slate-400">({person.totalRatings} ratings)</span>
-                    </div>
-                    <div className="flex gap-2 mt-3">
-                      <button
-                        onClick={() => handleMessage(person.id)}
-                        className="flex items-center gap-1 text-xs font-medium bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition-colors"
-                      >
-                        <MessageCircle size={12} /> Message
-                      </button>
-                      <button
-                        onClick={() => handleViewProfile(person.id)}
-                        className="text-xs font-medium bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-colors"
-                      >
-                        View Profile
-                      </button>
+            {filteredPeople.map((person) => {
+              const personLoc = getUserCurrentLocation(person.id);
+              return (
+                <div key={person.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+                  <div className="flex items-start gap-3">
+                    <Avatar name={person.name} size="md" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-slate-800">{person.name}</h3>
+                        <span className="text-xs text-slate-400">{person.distance} mi</span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {personLoc ? `${personLoc.city}, ${personLoc.state}` : 'Location unknown'}
+                      </p>
+                      <p className="text-sm text-slate-600 mt-1 line-clamp-2">{person.bio}</p>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {person.interests.map((i) => (
+                          <span key={i} className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full">{i}</span>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-1 mt-2">
+                        <Star size={12} className="text-amber-400 fill-amber-400" />
+                        <span className="text-xs font-medium text-slate-600">{person.reputation}</span>
+                        <span className="text-xs text-slate-400">({person.totalRatings} ratings)</span>
+                      </div>
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          onClick={() => handleMessage(person.id)}
+                          className="flex items-center gap-1 text-xs font-medium bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition-colors"
+                        >
+                          <MessageCircle size={12} /> Message
+                        </button>
+                        <button
+                          onClick={() => handleViewProfile(person.id)}
+                          className="text-xs font-medium bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-colors"
+                        >
+                          View Profile
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {filteredPeople.length === 0 && (
               <p className="text-center text-sm text-slate-400 py-8">No people found matching your search</p>
             )}
@@ -238,6 +251,7 @@ export default function Search() {
               const typeInfo = placeTypes[place.type] || {};
               const PlaceIcon = placeTypeIcons[place.type] || MapPin;
               const owner = getUserById(place.addedBy);
+              const loc = getLocationById(place.locationId);
               return (
                 <div key={place.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
                   <div className="flex items-start gap-3">
@@ -264,7 +278,7 @@ export default function Search() {
                         {place.cost && <span className="text-xs text-slate-400">{place.cost}</span>}
                       </div>
                       <p className="text-xs text-slate-500 mt-1">{place.description}</p>
-                      {place.address && <p className="text-[10px] text-slate-400 mt-1">{place.address}</p>}
+                      {loc?.address && <p className="text-[10px] text-slate-400 mt-1">{loc.address}</p>}
                       {place.googleLink && (
                         <a href={place.googleLink} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 underline">Google Maps</a>
                       )}
@@ -308,7 +322,6 @@ export default function Search() {
                         <span className="text-xs text-slate-400">{v.cost}</span>
                       </div>
                       <p className="text-xs text-slate-500 mt-1">{v.description}</p>
-                      {v.address && <p className="text-[10px] text-slate-400 mt-1">{v.address}</p>}
                       {owner && owner.id !== user.id && (
                         <div className="flex gap-2 mt-2">
                           <button onClick={() => handleMessage(owner.id)} className="flex items-center gap-1 text-xs font-medium bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition-colors">
@@ -376,6 +389,7 @@ export default function Search() {
           <div className="space-y-3">
             {filteredEvents.map((event) => {
               const host = getUserById(event.host);
+              const eventLoc = getLocationById(event.locationId);
               return (
                 <div key={event.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
                   <div className="flex items-start gap-3">
@@ -385,7 +399,7 @@ export default function Search() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-medium text-slate-800">{event.name}</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">{event.time} &middot; {event.location}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{event.time} &middot; {eventLoc?.name || 'Unknown location'}</p>
                       <p className="text-xs text-slate-400">Hosted by {host?.name || 'Unknown'}</p>
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-xs text-emerald-600 font-medium">{event.attendees} attending</span>

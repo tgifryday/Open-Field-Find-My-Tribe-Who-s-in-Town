@@ -4,14 +4,15 @@ import { useApp } from '../context/AppContext';
 import Avatar from '../components/Avatar';
 
 export default function Dashboard() {
-  const { user, getNearbyUsers, getUserTribes, allCallouts, allEvents } = useApp();
+  const { user, getNearbyUsers, getUserTribes, allCallouts, allEvents, getUserCurrentLocation, getLocationById } = useApp();
   const nearbyUsers = getNearbyUsers(20);
   const userTribes = getUserTribes();
   const incomingCallouts = allCallouts.filter((c) => c.senderId !== user.id);
   const upcomingEvents = allEvents.filter((e) => new Date(e.date) >= new Date()).slice(0, 3);
+  const currentLoc = getUserCurrentLocation(user.id);
 
   return (
-    <div className="pb-20 pt-16">
+    <div className="pb-24 pt-[76px]">
       <div className="px-4 py-4 space-y-5">
         {/* Welcome */}
         <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-5 text-white">
@@ -19,7 +20,7 @@ export default function Dashboard() {
           <h2 className="text-xl font-bold mb-1">{user.name === 'You' ? 'Explorer' : user.name}</h2>
           <div className="flex items-center gap-1 text-emerald-100 text-sm">
             <MapPin size={14} />
-            <span>{user.location.city}, {user.location.state}</span>
+            <span>{currentLoc ? `${currentLoc.city}, ${currentLoc.state}` : 'Location unknown'}</span>
           </div>
           <div className="flex gap-3 mt-4">
             <div className="bg-white/20 rounded-xl px-3 py-2 text-center flex-1">
@@ -133,21 +134,24 @@ export default function Dashboard() {
             </Link>
           </div>
           <div className="space-y-2">
-            {upcomingEvents.map((event) => (
-              <div key={event.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-blue-50 flex flex-col items-center justify-center shrink-0">
-                    <span className="text-xs font-bold text-blue-600">{new Date(event.date).toLocaleDateString('en', { month: 'short' })}</span>
-                    <span className="text-lg font-bold text-blue-700 leading-none">{new Date(event.date).getDate()}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-slate-800">{event.name}</p>
-                    <p className="text-xs text-slate-400">{event.time} &middot; {event.location}</p>
-                    <p className="text-xs text-slate-400">{event.attendees} attending</p>
+            {upcomingEvents.map((event) => {
+              const eventLoc = getLocationById(event.locationId);
+              return (
+                <div key={event.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-blue-50 flex flex-col items-center justify-center shrink-0">
+                      <span className="text-xs font-bold text-blue-600">{new Date(event.date).toLocaleDateString('en', { month: 'short' })}</span>
+                      <span className="text-lg font-bold text-blue-700 leading-none">{new Date(event.date).getDate()}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-slate-800">{event.name}</p>
+                      <p className="text-xs text-slate-400">{event.time} &middot; {eventLoc?.name || 'Unknown location'}</p>
+                      <p className="text-xs text-slate-400">{event.attendees} attending</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       </div>

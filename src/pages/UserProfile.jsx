@@ -8,13 +8,16 @@ import Avatar from '../components/Avatar';
 export default function UserProfile() {
   const { userId } = useParams();
   const navigate = useNavigate();
-  const { getUserById, getUserPlaces, getUserVehicles, getUserGear, getUserTribes, allTribes, startDirectMessage, user } = useApp();
+  const {
+    getUserById, getUserPlaces, getUserVehicles, getUserGear, getUserTribes, allTribes,
+    startDirectMessage, user, getUserCurrentLocation, getLocationById, getItemLocation,
+  } = useApp();
   const [activeTab, setActiveTab] = useState('about');
 
   const profileUser = getUserById(userId);
   if (!profileUser) {
     return (
-      <div className="pb-20 pt-16">
+      <div className="pb-24 pt-[76px]">
         <div className="px-4 py-4">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-slate-600 mb-4">
             <ArrowLeft size={16} /> Back
@@ -28,7 +31,8 @@ export default function UserProfile() {
   const userPlaces = getUserPlaces(userId);
   const userVehicles = getUserVehicles(userId);
   const userGear = getUserGear(userId);
-  const userTribes = allTribes.filter((t) => t.members.includes(userId));
+  const userTribesArr = allTribes.filter((t) => t.members.includes(userId));
+  const profileLoc = getUserCurrentLocation(userId);
 
   const handleMessage = () => {
     const threadId = startDirectMessage(userId);
@@ -45,8 +49,8 @@ export default function UserProfile() {
   ];
 
   return (
-    <div className="pb-20 pt-16">
-      <div className="px-4 py-4 space-y-4">
+    <div className="pb-24 pt-[76px]">
+      <div className="px-4 py-4 space-y-5">
         {/* Back Button */}
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-slate-600">
           <ArrowLeft size={16} /> Back
@@ -58,7 +62,7 @@ export default function UserProfile() {
           <h2 className="text-xl font-bold text-slate-800 mt-3">{profileUser.name}</h2>
           <div className="flex items-center justify-center gap-1 text-slate-400 text-sm mt-1">
             <MapPin size={14} />
-            <span>{profileUser.location.city}, {profileUser.location.state}</span>
+            <span>{profileLoc ? `${profileLoc.city}, ${profileLoc.state}` : 'Location unknown'}</span>
           </div>
           <p className="text-sm text-slate-600 mt-3">{profileUser.bio}</p>
 
@@ -73,7 +77,7 @@ export default function UserProfile() {
             </div>
             <div className="w-px bg-slate-200" />
             <div className="text-center">
-              <p className="text-lg font-bold text-slate-800">{userTribes.length}</p>
+              <p className="text-lg font-bold text-slate-800">{userTribesArr.length}</p>
               <p className="text-xs text-slate-400">Tribes</p>
             </div>
           </div>
@@ -125,7 +129,7 @@ export default function UserProfile() {
                 <Users size={14} className="text-purple-500" /> Tribes
               </h3>
               <div className="space-y-2">
-                {userTribes.map((tribe) => (
+                {userTribesArr.map((tribe) => (
                   <div key={tribe.id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: tribe.color + '20' }}>
                       <Users size={14} style={{ color: tribe.color }} />
@@ -136,7 +140,7 @@ export default function UserProfile() {
                     </div>
                   </div>
                 ))}
-                {userTribes.length === 0 && <p className="text-sm text-slate-400">No tribes yet</p>}
+                {userTribesArr.length === 0 && <p className="text-sm text-slate-400">No tribes yet</p>}
               </div>
             </div>
 
@@ -169,6 +173,7 @@ export default function UserProfile() {
           <div className="space-y-3">
             {userPlaces.map((place) => {
               const typeInfo = placeTypes[place.type] || {};
+              const loc = getLocationById(place.locationId);
               return (
                 <div key={place.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
                   <div className="flex items-start gap-3">
@@ -182,7 +187,7 @@ export default function UserProfile() {
                       </span>
                       {place.cost && <span className="text-xs text-slate-400 ml-2">{place.cost}</span>}
                       <p className="text-xs text-slate-500 mt-1">{place.description}</p>
-                      {place.address && <p className="text-[10px] text-slate-400 mt-1">{place.address}</p>}
+                      {loc?.address && <p className="text-[10px] text-slate-400 mt-1">{loc.address}</p>}
                       {place.googleLink && (
                         <a href={place.googleLink} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 underline">Google Maps</a>
                       )}
@@ -208,6 +213,7 @@ export default function UserProfile() {
           <div className="space-y-3">
             {userVehicles.map((v) => {
               const vType = vehicleTypes[v.type] || {};
+              const loc = getItemLocation(v);
               return (
                 <div key={v.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
                   <div className="flex items-start justify-between">
@@ -223,7 +229,7 @@ export default function UserProfile() {
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 mt-1">{v.description}</p>
-                      {v.address && <p className="text-[10px] text-slate-400 mt-1">{v.address}</p>}
+                      {loc?.address && <p className="text-[10px] text-slate-400 mt-1">{loc.address}</p>}
                     </div>
                     <Car size={20} className="text-slate-300 shrink-0" />
                   </div>
@@ -245,31 +251,34 @@ export default function UserProfile() {
         {/* Gear Tab */}
         {activeTab === 'gear' && (
           <div className="space-y-3">
-            {userGear.map((item) => (
-              <div key={item.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-medium text-sm text-slate-800">{item.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${item.available ? 'bg-emerald-100 text-emerald-700' : 'bg-red-50 text-red-500'}`}>
-                        {item.available ? 'Available' : 'In Use'}
-                      </span>
-                      <span className="text-xs text-slate-400">{item.cost}</span>
+            {userGear.map((item) => {
+              const loc = getItemLocation(item);
+              return (
+                <div key={item.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-medium text-sm text-slate-800">{item.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${item.available ? 'bg-emerald-100 text-emerald-700' : 'bg-red-50 text-red-500'}`}>
+                          {item.available ? 'Available' : 'In Use'}
+                        </span>
+                        <span className="text-xs text-slate-400">{item.cost}</span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">{item.description}</p>
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">{item.description}</p>
+                    <Package size={20} className="text-slate-300 shrink-0" />
                   </div>
-                  <Package size={20} className="text-slate-300 shrink-0" />
+                  {profileUser.id !== user.id && (
+                    <button
+                      onClick={handleMessage}
+                      className="mt-3 w-full text-xs font-medium bg-emerald-50 text-emerald-700 py-2 rounded-lg hover:bg-emerald-100 transition-colors"
+                    >
+                      Message about this gear
+                    </button>
+                  )}
                 </div>
-                {profileUser.id !== user.id && (
-                  <button
-                    onClick={handleMessage}
-                    className="mt-3 w-full text-xs font-medium bg-emerald-50 text-emerald-700 py-2 rounded-lg hover:bg-emerald-100 transition-colors"
-                  >
-                    Message about this gear
-                  </button>
-                )}
-              </div>
-            ))}
+              );
+            })}
             {userGear.length === 0 && <p className="text-center text-sm text-slate-400 py-8">No gear listed</p>}
           </div>
         )}

@@ -10,7 +10,6 @@ export default function Messages() {
   const [newMessage, setNewMessage] = useState('');
   const location = useLocation();
 
-  // Open a specific thread if navigated with state
   useEffect(() => {
     if (location.state?.openThread) {
       setSelectedThread(location.state.openThread);
@@ -43,7 +42,7 @@ export default function Messages() {
     const otherUser = otherUserId ? getUserById(otherUserId) : null;
 
     return (
-      <div className="pb-20 pt-16 flex flex-col h-[calc(100vh-0px)]">
+      <div className="pb-24 pt-[76px] flex flex-col h-[calc(100vh-0px)]">
         {/* Thread Header */}
         <div className="fixed top-14 left-0 right-0 bg-white border-b border-slate-200 z-40 px-4 py-3">
           <div className="max-w-lg mx-auto flex items-center gap-3">
@@ -142,7 +141,7 @@ export default function Messages() {
   }
 
   return (
-    <div className="pb-20 pt-16">
+    <div className="pb-24 pt-[76px]">
       <div className="px-4 py-4 space-y-4">
         <h2 className="text-xl font-bold text-slate-800">Messages</h2>
 
@@ -186,7 +185,7 @@ export default function Messages() {
           </div>
         )}
 
-        {/* Group Threads - In Range */}
+        {/* Group Threads */}
         <div>
           <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
             <MapPin size={12} /> Group Threads
