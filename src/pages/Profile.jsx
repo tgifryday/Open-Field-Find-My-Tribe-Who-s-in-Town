@@ -322,43 +322,43 @@ export default function Profile() {
       {/* Create Place Modal */}
       {showCreateModal === 'place' && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 space-y-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-8 space-y-5">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg text-slate-800">Add a Place</h3>
               <button onClick={resetForm} className="p-1 rounded-lg hover:bg-slate-100"><X size={20} /></button>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <input type="text" placeholder="Name *" value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
               <select value={formData.type || 'room'} onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
                 {placeTypeOptions.map((t) => (
                   <option key={t} value={t}>{placeTypes[t]?.label || t}</option>
                 ))}
               </select>
               <textarea placeholder="Description" value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" rows={2} />
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" rows={2} />
               <input type="text" placeholder="Cost (e.g. $30/night, free)" value={formData.cost || ''} onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
               <input type="text" placeholder="Address" value={formData.address || ''} onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-              <div className="grid grid-cols-2 gap-2">
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              <div className="grid grid-cols-2 gap-3">
                 <input type="text" placeholder="City" value={formData.city || ''} onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                  className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                 <input type="text" placeholder="State" value={formData.state || ''} onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                  className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <input type="text" placeholder="Latitude *" value={formData.lat || ''} onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                  className="flex-1 px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                 <input type="text" placeholder="Longitude *" value={formData.lng || ''} onChange={(e) => setFormData({ ...formData, lng: e.target.value })}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                  className="flex-1 px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
               </div>
-              <button onClick={useMyLocation} className="text-xs text-emerald-600 font-medium hover:underline">
-                Use my current location
+              <button onClick={useMyLocation} className="text-sm text-emerald-600 font-medium px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-colors w-full">
+                📍 Use my current location
               </button>
               <button onClick={handleCreatePlace} disabled={!formData.name || !formData.lat || !formData.lng}
-                className="w-full py-3 rounded-xl bg-emerald-600 text-white font-medium text-sm hover:bg-emerald-700 transition-colors disabled:opacity-50">
+                className="w-full py-3.5 rounded-xl bg-emerald-600 text-white font-medium text-sm hover:bg-emerald-700 transition-colors disabled:opacity-50">
                 Add Place
               </button>
             </div>
@@ -369,48 +369,48 @@ export default function Profile() {
       {/* Create Vehicle Modal */}
       {showCreateModal === 'vehicle' && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 space-y-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-8 space-y-5">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg text-slate-800">Add a Vehicle</h3>
               <button onClick={resetForm} className="p-1 rounded-lg hover:bg-slate-100"><X size={20} /></button>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <input type="text" placeholder="Name (e.g. Honda Civic 2020) *" value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               <select value={formData.type || 'car'} onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                 {Object.entries(vehicleTypes).map(([key, { label }]) => (
                   <option key={key} value={key}>{label}</option>
                 ))}
               </select>
               <textarea placeholder="Description" value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" rows={2} />
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" rows={2} />
               <input type="text" placeholder="Cost (e.g. $30/day, free)" value={formData.cost || ''} onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               <select value={formData.available || 'true'} onChange={(e) => setFormData({ ...formData, available: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                 <option value="true">Available for rent/borrow</option>
                 <option value="false">Not available right now</option>
               </select>
               <input type="text" placeholder="Address / Pickup location" value={formData.address || ''} onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              <div className="grid grid-cols-2 gap-2">
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <div className="grid grid-cols-2 gap-3">
                 <input type="text" placeholder="City" value={formData.city || ''} onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 <input type="text" placeholder="State" value={formData.state || ''} onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <input type="text" placeholder="Latitude *" value={formData.lat || ''} onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="flex-1 px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 <input type="text" placeholder="Longitude *" value={formData.lng || ''} onChange={(e) => setFormData({ ...formData, lng: e.target.value })}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="flex-1 px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
-              <button onClick={useMyLocation} className="text-xs text-blue-600 font-medium hover:underline">
-                Use my current location
+              <button onClick={useMyLocation} className="text-sm text-blue-600 font-medium px-4 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors w-full">
+                📍 Use my current location
               </button>
               <button onClick={handleCreateVehicle} disabled={!formData.name || !formData.lat || !formData.lng}
-                className="w-full py-3 rounded-xl bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 transition-colors disabled:opacity-50">
+                className="w-full py-3.5 rounded-xl bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 transition-colors disabled:opacity-50">
                 Add Vehicle
               </button>
             </div>
@@ -421,26 +421,26 @@ export default function Profile() {
       {/* Create Gear Modal */}
       {showCreateModal === 'gear' && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 space-y-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-8 space-y-5">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg text-slate-800">Add Gear</h3>
               <button onClick={resetForm} className="p-1 rounded-lg hover:bg-slate-100"><X size={20} /></button>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <input type="text" placeholder="Name (e.g. Camping Tent) *" value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
               <textarea placeholder="Description" value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" rows={2} />
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" rows={2} />
               <input type="text" placeholder="Cost (e.g. $10/day, free)" value={formData.cost || ''} onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
               <select value={formData.available || 'true'} onChange={(e) => setFormData({ ...formData, available: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
                 <option value="true">Available for rent/borrow</option>
                 <option value="false">Not available right now</option>
               </select>
               <p className="text-xs text-slate-400">Location defaults to your current location.</p>
               <button onClick={handleCreateGear} disabled={!formData.name}
-                className="w-full py-3 rounded-xl bg-orange-500 text-white font-medium text-sm hover:bg-orange-600 transition-colors disabled:opacity-50">
+                className="w-full py-3.5 rounded-xl bg-orange-500 text-white font-medium text-sm hover:bg-orange-600 transition-colors disabled:opacity-50">
                 Add Gear
               </button>
             </div>
@@ -451,44 +451,44 @@ export default function Profile() {
       {/* Create Recommendation Modal */}
       {showCreateModal === 'recommendation' && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 space-y-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-8 space-y-5">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg text-slate-800">Add a Recommendation</h3>
               <button onClick={resetForm} className="p-1 rounded-lg hover:bg-slate-100"><X size={20} /></button>
             </div>
             <p className="text-xs text-slate-500">Recommend a restaurant, cafe, or other place you love. Paste a Google Maps link for easy location sharing.</p>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <input type="text" placeholder="Name *" value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
               <select value={formData.type || 'restaurant'} onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white">
                 {recommendationTypes.map((t) => (
                   <option key={t} value={t}>{placeTypes[t]?.label || t}</option>
                 ))}
               </select>
               <textarea placeholder="Why do you recommend it?" value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" rows={2} />
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" rows={2} />
               <input type="text" placeholder="Google Maps link" value={formData.googleLink || ''} onChange={(e) => setFormData({ ...formData, googleLink: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
               <input type="text" placeholder="Address" value={formData.address || ''} onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
-              <div className="grid grid-cols-2 gap-2">
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              <div className="grid grid-cols-2 gap-3">
                 <input type="text" placeholder="City" value={formData.city || ''} onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                  className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
                 <input type="text" placeholder="State" value={formData.state || ''} onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                  className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <input type="text" placeholder="Latitude *" value={formData.lat || ''} onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                  className="flex-1 px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
                 <input type="text" placeholder="Longitude *" value={formData.lng || ''} onChange={(e) => setFormData({ ...formData, lng: e.target.value })}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                  className="flex-1 px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
               </div>
-              <button onClick={useMyLocation} className="text-xs text-amber-600 font-medium hover:underline">
-                Use my current location
+              <button onClick={useMyLocation} className="text-sm text-amber-600 font-medium px-4 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 transition-colors w-full">
+                📍 Use my current location
               </button>
               <button onClick={handleCreateRecommendation} disabled={!formData.name || !formData.lat || !formData.lng}
-                className="w-full py-3 rounded-xl bg-amber-500 text-white font-medium text-sm hover:bg-amber-600 transition-colors disabled:opacity-50">
+                className="w-full py-3.5 rounded-xl bg-amber-500 text-white font-medium text-sm hover:bg-amber-600 transition-colors disabled:opacity-50">
                 Add Recommendation
               </button>
             </div>

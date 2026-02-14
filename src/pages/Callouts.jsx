@@ -124,7 +124,7 @@ export default function Callouts() {
                 value={responseText}
                 onChange={(e) => setResponseText(e.target.value)}
                 placeholder="I'm here! (optional message)"
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
               <div className="flex gap-2">
                 <button
@@ -230,19 +230,19 @@ export default function Callouts() {
       {showCreate && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b border-slate-100">
+            <div className="flex items-center justify-between px-8 py-5 border-b border-slate-100">
               <h3 className="font-bold text-lg text-slate-800">Send a Callout</h3>
               <button onClick={() => setShowCreate(false)} className="p-1 rounded-lg hover:bg-slate-100">
                 <X size={20} className="text-slate-400" />
               </button>
             </div>
-            <div className="p-4 space-y-4">
+            <div className="p-8 space-y-5">
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-1 block">Tribe</label>
                 <select
                   value={newCallout.tribeId}
                   onChange={(e) => setNewCallout({ ...newCallout, tribeId: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                  className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
                 >
                   <option value="">Select a tribe</option>
                   {userTribes.map((t) => (
@@ -258,7 +258,7 @@ export default function Callouts() {
                     value={newCallout.city}
                     onChange={(e) => setNewCallout({ ...newCallout, city: e.target.value })}
                     placeholder="Los Angeles"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
                 <div>
@@ -268,7 +268,7 @@ export default function Callouts() {
                     value={newCallout.state}
                     onChange={(e) => setNewCallout({ ...newCallout, state: e.target.value })}
                     placeholder="CA"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
               </div>
@@ -279,7 +279,7 @@ export default function Callouts() {
                   onChange={(e) => setNewCallout({ ...newCallout, message: e.target.value })}
                   placeholder="Hey! Anyone around this weekend? Looking to co-work or grab coffee..."
                   rows={3}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                  className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
                 />
               </div>
               <button

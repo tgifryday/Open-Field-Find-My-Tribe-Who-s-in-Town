@@ -6,12 +6,13 @@ const AppContext = createContext();
 export function AppProvider({ children }) {
   const [user, setUser] = useState(currentUser);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [allUsers] = useState(users);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [allUsers, setAllUsers] = useState(users);
   const [allTribes, setAllTribes] = useState(tribes);
   const [allPlaces, setAllPlaces] = useState(places);
   const [allGear, setAllGear] = useState(gear);
   const [allVehicles, setAllVehicles] = useState(vehicles);
-  const [allEvents] = useState(events);
+  const [allEvents, setAllEvents] = useState(events);
   const [allCallouts, setAllCallouts] = useState(callouts);
   const [allMessages, setAllMessages] = useState(messages);
   const [allLocations, setAllLocations] = useState(locations);
@@ -22,7 +23,16 @@ export function AppProvider({ children }) {
   ]);
 
   const login = () => setIsLoggedIn(true);
-  const logout = () => setIsLoggedIn(false);
+  const logout = () => { setIsLoggedIn(false); setIsAdmin(false); };
+  const adminLogin = (email, password) => {
+    if (email === 'admin@openfield.app' && password === 'admin123') {
+      setIsAdmin(true);
+      setIsLoggedIn(true);
+      return true;
+    }
+    return false;
+  };
+  const adminLogout = () => { setIsAdmin(false); };
 
   // Location helpers
   const getLocationById = useCallback((id) => {
@@ -50,7 +60,6 @@ export function AppProvider({ children }) {
     return { lat: loc.lat, lng: loc.lng, city: loc.city, state: loc.state, name: loc.name };
   }, [allUsers, allLocations, user]);
 
-  // Resolve position for a place/vehicle/gear item
   const getItemLocation = useCallback((item) => {
     if (item.borrowedBy) {
       return getUserCurrentLocation(item.borrowedBy);
@@ -60,6 +69,20 @@ export function AppProvider({ children }) {
     return { lat: loc.lat, lng: loc.lng, city: loc.city, state: loc.state, name: loc.name, address: loc.address };
   }, [allLocations, getUserCurrentLocation]);
 
+  // --- User actions ---
+  const updateProfile = (updates) => {
+    setUser((prev) => ({ ...prev, ...updates }));
+    setAllUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, ...updates } : u));
+  };
+
+  const addFutureLocation = (locationId, date) => {
+    setUser((prev) => ({
+      ...prev,
+      futureLocations: [...(prev.futureLocations || []), { locationId, date }],
+    }));
+  };
+
+  // --- Tribe actions ---
   const addCallout = (callout) => {
     setAllCallouts((prev) => [{ ...callout, id: `callout-${Date.now()}`, responses: [], createdAt: new Date().toISOString() }, ...prev]);
   };
@@ -97,6 +120,33 @@ export function AppProvider({ children }) {
     return newTribe;
   };
 
+  const joinTribe = (tribeId) => {
+    setAllTribes((prev) =>
+      prev.map((t) =>
+        t.id === tribeId && !t.members.includes(user.id)
+          ? { ...t, members: [...t.members, user.id], memberCount: t.memberCount + 1 }
+          : t
+      )
+    );
+  };
+
+  const leaveTribe = (tribeId) => {
+    setAllTribes((prev) =>
+      prev.map((t) =>
+        t.id === tribeId
+          ? { ...t, members: t.members.filter((m) => m !== user.id), memberCount: Math.max(0, t.memberCount - 1) }
+          : t
+      )
+    );
+  };
+
+  // --- Event actions ---
+  const rsvpEvent = (eventId) => {
+    setAllEvents((prev) =>
+      prev.map((e) => e.id === eventId ? { ...e, attendees: e.attendees + 1 } : e)
+    );
+  };
+
   const markNotificationRead = (id) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
   };
@@ -116,28 +166,24 @@ export function AppProvider({ children }) {
     return newLoc;
   };
 
-  // Place CRUD
   const addPlace = (place) => {
     const newPlace = { ...place, id: `place-${Date.now()}`, addedBy: user.id, rating: 0, inUseBy: null };
     setAllPlaces((prev) => [...prev, newPlace]);
     return newPlace;
   };
 
-  // Vehicle CRUD
   const addVehicle = (vehicle) => {
     const newVehicle = { ...vehicle, id: `vehicle-${Date.now()}`, owner: user.id, borrowedBy: null };
     setAllVehicles((prev) => [...prev, newVehicle]);
     return newVehicle;
   };
 
-  // Gear CRUD
   const addGear = (gearItem) => {
     const newGear = { ...gearItem, id: `gear-${Date.now()}`, owner: user.id, borrowedBy: null };
     setAllGear((prev) => [...prev, newGear]);
     return newGear;
   };
 
-  // Direct messaging
   const startDirectMessage = (otherUserId) => {
     const otherUser = getUserById(otherUserId);
     if (!otherUser) return null;
@@ -156,7 +202,6 @@ export function AppProvider({ children }) {
     return newThread.id;
   };
 
-  // Get listings by user
   const getUserPlaces = (userId) => allPlaces.filter((p) => p.addedBy === userId);
   const getUserVehicles = (userId) => allVehicles.filter((v) => v.owner === userId);
   const getUserGear = (userId) => allGear.filter((g) => g.owner === userId);
@@ -166,20 +211,54 @@ export function AppProvider({ children }) {
     return (u.locationIds || []).map((id) => allLocations.find((l) => l.id === id)).filter(Boolean);
   };
 
+  // --- Admin CRUD ---
+  const deleteItem = (collection, id) => {
+    const setters = {
+      users: setAllUsers, tribes: setAllTribes, places: setAllPlaces,
+      gear: setAllGear, vehicles: setAllVehicles, events: setAllEvents,
+      callouts: setAllCallouts, locations: setAllLocations, messages: setAllMessages,
+    };
+    const setter = setters[collection];
+    if (setter) setter((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const updateItem = (collection, id, updates) => {
+    const setters = {
+      users: setAllUsers, tribes: setAllTribes, places: setAllPlaces,
+      gear: setAllGear, vehicles: setAllVehicles, events: setAllEvents,
+      callouts: setAllCallouts, locations: setAllLocations, messages: setAllMessages,
+    };
+    const setter = setters[collection];
+    if (setter) setter((prev) => prev.map((item) => item.id === id ? { ...item, ...updates } : item));
+  };
+
+  const addItem = (collection, item) => {
+    const setters = {
+      users: setAllUsers, tribes: setAllTribes, places: setAllPlaces,
+      gear: setAllGear, vehicles: setAllVehicles, events: setAllEvents,
+      callouts: setAllCallouts, locations: setAllLocations, messages: setAllMessages,
+    };
+    const setter = setters[collection];
+    if (setter) setter((prev) => [...prev, { ...item, id: `${collection.slice(0, -1)}-${Date.now()}` }]);
+  };
+
   return (
     <AppContext.Provider
       value={{
         user, setUser, isLoggedIn, login, logout,
+        isAdmin, adminLogin, adminLogout,
         allUsers, allTribes, allPlaces, allGear, allVehicles, allEvents, allLocations,
         allCallouts, addCallout, respondToCallout,
         allMessages, sendMessage,
         notifications, markNotificationRead,
         getNearbyUsers, getUserTribes, getUserById, getTribeById,
-        createTribe,
+        createTribe, joinTribe, leaveTribe,
+        updateProfile, addFutureLocation, rsvpEvent,
         getLocationById, getUserCurrentLocation, getItemLocation,
         addLocation, addPlace, addVehicle, addGear,
         startDirectMessage,
         getUserPlaces, getUserVehicles, getUserGear, getUserLocations,
+        deleteItem, updateItem, addItem,
       }}
     >
       {children}
