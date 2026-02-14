@@ -148,6 +148,27 @@ export const tribes = [
     owners: ['user-3'], admins: [],
     joinLink: 'openfield.app/join/vanlife-wc', password: null, color: '#f59e0b',
   },
+  {
+    id: 'tribe-4', name: 'Hiking & Trail Runners LA',
+    description: 'Hit the trails around Los Angeles! Group hikes, trail runs, and outdoor fitness.',
+    memberCount: 35, members: ['user-4', 'user-6', 'user-7'],
+    owners: ['user-4'], admins: ['user-6'],
+    joinLink: 'openfield.app/join/hiking-la', password: null, color: '#16a34a',
+  },
+  {
+    id: 'tribe-5', name: 'Creative Collective',
+    description: 'Artists, musicians, writers, and makers connecting for collaboration and inspiration.',
+    memberCount: 22, members: ['user-5', 'user-8'],
+    owners: ['user-5'], admins: [],
+    joinLink: 'openfield.app/join/creative-collective', password: 'create2026', color: '#a855f7',
+  },
+  {
+    id: 'tribe-6', name: 'Foodies & Foragers',
+    description: 'Discover the best food spots, share recipes, and forage together in SoCal.',
+    memberCount: 41, members: ['user-2', 'user-6', 'user-8'],
+    owners: ['user-6'], admins: ['user-2'],
+    joinLink: 'openfield.app/join/foodies-foragers', password: null, color: '#f97316',
+  },
 ];
 
 // ─── PLACES / SPACES ────────────────────────────────────────────────────────

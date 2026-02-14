@@ -24,6 +24,18 @@ export function AppProvider({ children }) {
 
   const login = () => setIsLoggedIn(true);
   const logout = () => { setIsLoggedIn(false); setIsAdmin(false); };
+
+  const createNewUser = (userData) => {
+    const newUser = {
+      ...user,
+      name: userData.name || 'Explorer',
+      bio: userData.bio || '',
+      interests: userData.interests || [],
+    };
+    setUser(newUser);
+    setAllUsers((prev) => prev.map((u) => u.id === newUser.id ? newUser : u));
+    setIsLoggedIn(true);
+  };
   const adminLogin = (email, password) => {
     if (email === 'admin@openfield.app' && password === 'admin123') {
       setIsAdmin(true);
@@ -245,7 +257,7 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider
       value={{
-        user, setUser, isLoggedIn, login, logout,
+        user, setUser, isLoggedIn, login, logout, createNewUser,
         isAdmin, adminLogin, adminLogout,
         allUsers, allTribes, allPlaces, allGear, allVehicles, allEvents, allLocations,
         allCallouts, addCallout, respondToCallout,

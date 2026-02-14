@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Search as SearchIcon, Users, MapPin, Package, Calendar, Car, MessageCircle,
   Trees, Laptop, Moon, Droplets, Leaf, Tent, Star, UtensilsCrossed, Store,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { placeTypes, vehicleTypes } from '../data/mockData';
 import Avatar from '../components/Avatar';
@@ -17,7 +17,11 @@ const tabs = [
 ];
 
 const activityFilters = [
-  'Exercise with', 'Activity with', 'Spend time with', 'Explore with', 'Co-work with',
+  { label: 'Exercise with', interests: ['hiking', 'running', 'climbing', 'yoga', 'fitness', 'surfing', 'dance'] },
+  { label: 'Activity with', interests: ['surfing', 'camping', 'climbing', 'music', 'photography', 'board games'] },
+  { label: 'Spend time with', interests: ['cooking', 'art', 'gardening', 'food', 'meditation'] },
+  { label: 'Explore with', interests: ['hiking', 'foraging', 'travel', 'van life', 'camping'] },
+  { label: 'Co-work with', interests: ['co-working', 'tech', 'writing'] },
 ];
 
 const placeTypeIcons = {
@@ -32,9 +36,17 @@ export default function Search() {
     getUserById, startDirectMessage, getUserCurrentLocation, getLocationById, rsvpEvent,
   } = useApp();
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('people');
   const [query, setQuery] = useState('');
   const [selectedActivity, setSelectedActivity] = useState(null);
+
+  // Handle navigation state from Dashboard
+  useEffect(() => {
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab);
+    }
+  }, [location.state]);
   const [selectedPlaceType, setSelectedPlaceType] = useState('all');
   const [maxDistance, setMaxDistance] = useState(50);
   const [rsvpd, setRsvpd] = useState(new Set());
@@ -65,10 +77,18 @@ export default function Search() {
         );
       });
     }
+    if (selectedActivity) {
+      const activityDef = activityFilters.find((a) => a.label === selectedActivity);
+      if (activityDef) {
+        result = result.filter((u) =>
+          u.interests.some((i) => activityDef.interests.includes(i.toLowerCase()))
+        );
+      }
+    }
     result = result.filter((u) => (u.distance || 0) <= maxDistance);
     result.sort((a, b) => (a.distance || 0) - (b.distance || 0));
     return result;
-  }, [otherUsers, query, maxDistance, getUserCurrentLocation]);
+  }, [otherUsers, query, maxDistance, selectedActivity, getUserCurrentLocation]);
 
   const filteredPlaces = useMemo(() => {
     let result = allPlaces;
@@ -147,13 +167,13 @@ export default function Search() {
             <div className="flex gap-2 overflow-x-auto pb-1">
               {activityFilters.map((a) => (
                 <button
-                  key={a}
-                  onClick={() => setSelectedActivity(selectedActivity === a ? null : a)}
+                  key={a.label}
+                  onClick={() => setSelectedActivity(selectedActivity === a.label ? null : a.label)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-                    selectedActivity === a ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+                    selectedActivity === a.label ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
                   }`}
                 >
-                  {a}
+                  {a.label}
                 </button>
               ))}
             </div>

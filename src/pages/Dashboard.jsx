@@ -1,15 +1,23 @@
-import { Link } from 'react-router-dom';
-import { MapPin, ArrowRight, Calendar, Megaphone, Users, Compass } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { MapPin, ArrowRight, Calendar, Megaphone, Users, Compass, Check } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import Avatar from '../components/Avatar';
 
 export default function Dashboard() {
-  const { user, getNearbyUsers, getUserTribes, allCallouts, allEvents, getUserCurrentLocation, getLocationById } = useApp();
+  const { user, getNearbyUsers, getUserTribes, allCallouts, allEvents, getUserCurrentLocation, getLocationById, rsvpEvent } = useApp();
+  const navigate = useNavigate();
   const nearbyUsers = getNearbyUsers(20);
   const userTribes = getUserTribes();
   const incomingCallouts = allCallouts.filter((c) => c.senderId !== user.id);
   const upcomingEvents = allEvents.filter((e) => new Date(e.date) >= new Date()).slice(0, 3);
   const currentLoc = getUserCurrentLocation(user.id);
+  const [rsvpd, setRsvpd] = useState(new Set());
+
+  const handleRsvp = (eventId) => {
+    rsvpEvent(eventId);
+    setRsvpd((prev) => new Set(prev).add(eventId));
+  };
 
   return (
     <div className="pb-28 pt-16">
@@ -41,12 +49,12 @@ export default function Dashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-4 gap-3">
           {[
-            { to: '/callouts?new=1', icon: Megaphone, label: "Who's Here?", color: 'bg-amber-100 text-amber-600' },
+            { to: '/callouts', icon: Megaphone, label: "Who's Here?", color: 'bg-amber-100 text-amber-600', state: { openCreate: true } },
             { to: '/map', icon: Compass, label: 'Explore', color: 'bg-emerald-100 text-emerald-600' },
             { to: '/search', icon: Users, label: 'Find People', color: 'bg-blue-100 text-blue-600' },
             { to: '/tribes', icon: Users, label: 'My Tribes', color: 'bg-purple-100 text-purple-600' },
-          ].map(({ to, icon: Icon, label, color }) => (
-            <Link key={to} to={to} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+          ].map(({ to, icon: Icon, label, color, state }) => (
+            <Link key={label} to={to} state={state} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
               <div className={`w-11 h-11 rounded-xl ${color} flex items-center justify-center`}>
                 <Icon size={20} />
               </div>
@@ -71,6 +79,7 @@ export default function Dashboard() {
                 <Link
                   key={callout.id}
                   to="/callouts"
+                  state={{ openCallout: callout.id }}
                   className="block bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start gap-3">
@@ -101,13 +110,17 @@ export default function Dashboard() {
             <h3 className="font-semibold text-slate-800 flex items-center gap-2">
               <MapPin size={16} className="text-emerald-500" /> People Nearby
             </h3>
-            <Link to="/search?tab=people" className="text-emerald-600 text-sm font-medium flex items-center gap-1">
+            <Link to="/search" className="text-emerald-600 text-sm font-medium flex items-center gap-1">
               See all <ArrowRight size={14} />
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5">
             {nearbyUsers.slice(0, 6).map((person) => (
-              <div key={person.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 min-w-[150px] shrink-0">
+              <button
+                key={person.id}
+                onClick={() => navigate(`/user/${person.id}`)}
+                className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 min-w-[150px] shrink-0 text-left hover:shadow-md transition-shadow"
+              >
                 <div className="flex flex-col items-center text-center">
                   <Avatar name={person.name} size="md" />
                   <p className="font-medium text-sm text-slate-800 mt-2.5 truncate w-full">{person.name}</p>
@@ -118,7 +131,7 @@ export default function Dashboard() {
                     ))}
                   </div>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </section>
@@ -129,13 +142,14 @@ export default function Dashboard() {
             <h3 className="font-semibold text-slate-800 flex items-center gap-2">
               <Calendar size={16} className="text-blue-500" /> Upcoming Events
             </h3>
-            <Link to="/search?tab=events" className="text-emerald-600 text-sm font-medium flex items-center gap-1">
+            <Link to="/search" state={{ tab: 'events' }} className="text-emerald-600 text-sm font-medium flex items-center gap-1">
               See all <ArrowRight size={14} />
             </Link>
           </div>
           <div className="space-y-3">
             {upcomingEvents.map((event) => {
               const eventLoc = getLocationById(event.locationId);
+              const isRsvpd = rsvpd.has(event.id);
               return (
                 <div key={event.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
                   <div className="flex items-center gap-4">
@@ -146,7 +160,20 @@ export default function Dashboard() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm text-slate-800">{event.name}</p>
                       <p className="text-xs text-slate-400 mt-1">{event.time} &middot; {eventLoc?.name || 'Unknown location'}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">{event.attendees} attending</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-xs text-slate-400">{event.attendees} attending</p>
+                        <button
+                          onClick={() => handleRsvp(event.id)}
+                          disabled={isRsvpd}
+                          className={`text-xs font-medium px-3 py-1 rounded-lg transition-colors flex items-center gap-1 ${
+                            isRsvpd
+                              ? 'bg-emerald-600 text-white cursor-default'
+                              : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100'
+                          }`}
+                        >
+                          {isRsvpd ? <><Check size={12} /> Going!</> : 'RSVP'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

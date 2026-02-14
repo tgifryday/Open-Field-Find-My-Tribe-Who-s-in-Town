@@ -10,6 +10,9 @@ export default function Tribes() {
   const [showCreate, setShowCreate] = useState(false);
   const [newTribe, setNewTribe] = useState({ name: '', description: '', password: '', color: '#10b981' });
   const [copied, setCopied] = useState(false);
+  const [passwordPrompt, setPasswordPrompt] = useState(null);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const userTribes = getUserTribes();
 
@@ -187,16 +190,81 @@ export default function Tribes() {
                     </div>
                   </div>
                   <button
-                    onClick={() => joinTribe(tribe.id)}
+                    onClick={() => {
+                      if (tribe.password) {
+                        setPasswordPrompt(tribe);
+                        setPasswordInput('');
+                        setPasswordError('');
+                      } else {
+                        joinTribe(tribe.id);
+                      }
+                    }}
                     className="text-sm font-medium text-emerald-600 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 transition-colors"
                   >
-                    Join
+                    {tribe.password ? 'Request' : 'Join'}
                   </button>
                 </div>
               ))}
           </div>
         </div>
       </div>
+
+      {/* Password Prompt Modal */}
+      {passwordPrompt && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h3 className="font-bold text-lg text-slate-800">Join {passwordPrompt.name}</h3>
+              <button onClick={() => setPasswordPrompt(null)} className="p-1 rounded-lg hover:bg-slate-100">
+                <X size={20} className="text-slate-400" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 rounded-xl p-3">
+                <Lock size={16} />
+                <span>This tribe requires a password to join.</span>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-1 block">Password</label>
+                <input
+                  type="password"
+                  value={passwordInput}
+                  onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(''); }}
+                  placeholder="Enter tribe password"
+                  className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      if (passwordInput === passwordPrompt.password) {
+                        joinTribe(passwordPrompt.id);
+                        setPasswordPrompt(null);
+                        setPasswordInput('');
+                      } else {
+                        setPasswordError('Incorrect password. Try again.');
+                      }
+                    }
+                  }}
+                />
+                {passwordError && <p className="text-xs text-red-500 mt-1">{passwordError}</p>}
+              </div>
+              <button
+                onClick={() => {
+                  if (passwordInput === passwordPrompt.password) {
+                    joinTribe(passwordPrompt.id);
+                    setPasswordPrompt(null);
+                    setPasswordInput('');
+                  } else {
+                    setPasswordError('Incorrect password. Try again.');
+                  }
+                }}
+                disabled={!passwordInput}
+                className="w-full bg-emerald-600 text-white font-semibold py-3 rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Join Tribe
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Create Tribe Modal */}
       {showCreate && (

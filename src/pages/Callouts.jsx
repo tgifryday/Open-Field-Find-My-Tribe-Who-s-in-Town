@@ -1,15 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Megaphone, MapPin, Send, MessageSquare, Clock, ChevronRight, X, Check, Plus } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import Avatar from '../components/Avatar';
 
 export default function Callouts() {
   const { user, allCallouts, addCallout, respondToCallout, getUserTribes, getUserCurrentLocation } = useApp();
+  const location = useLocation();
   const [tab, setTab] = useState('incoming');
   const [selectedCallout, setSelectedCallout] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [responseText, setResponseText] = useState('');
   const [newCallout, setNewCallout] = useState({ tribeId: '', city: '', state: '', message: '' });
+
+  // Handle navigation state from Dashboard
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      setShowCreate(true);
+    }
+    if (location.state?.openCallout) {
+      setSelectedCallout(location.state.openCallout);
+    }
+  }, [location.state]);
 
   const userTribes = getUserTribes();
   const incoming = allCallouts.filter((c) => c.senderId !== user.id);

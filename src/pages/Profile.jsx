@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { MapPin, Star, Calendar, Users, LogOut, ChevronRight, Navigation, Edit3, Plus, X, Home, Car, Package, MessageCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { MapPin, Star, Calendar, Users, LogOut, ChevronRight, ChevronDown, Navigation, Edit3, Plus, X, Home, Car, Package, MessageCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { placeTypes, vehicleTypes } from '../data/mockData';
 import Avatar from '../components/Avatar';
@@ -10,9 +11,11 @@ export default function Profile() {
     addPlace, addVehicle, addGear, addLocation, getUserCurrentLocation, getLocationById,
     updateProfile, addFutureLocation,
   } = useApp();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(null);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [expandedListing, setExpandedListing] = useState(null);
   const [showFutureLocModal, setShowFutureLocModal] = useState(false);
   const [editData, setEditData] = useState({ name: '', bio: '' });
   const [futureLocData, setFutureLocData] = useState({ city: '', state: '', date: '', lat: '', lng: '' });
@@ -200,24 +203,103 @@ export default function Profile() {
             </button>
           </div>
 
-          {/* Listing Summaries */}
+          {/* Listing Summaries - Expandable */}
           <div className="space-y-2">
             {userPlaces.length > 0 && (
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
-                <Home size={16} className="text-purple-500" />
-                <span className="text-sm text-slate-700 flex-1">{userPlaces.length} place{userPlaces.length !== 1 ? 's' : ''}</span>
+              <div>
+                <button
+                  onClick={() => setExpandedListing(expandedListing === 'places' ? null : 'places')}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <Home size={16} className="text-purple-500" />
+                  <span className="text-sm text-slate-700 flex-1 text-left">{userPlaces.length} place{userPlaces.length !== 1 ? 's' : ''}</span>
+                  {expandedListing === 'places' ? <ChevronDown size={16} className="text-slate-400" /> : <ChevronRight size={16} className="text-slate-400" />}
+                </button>
+                {expandedListing === 'places' && (
+                  <div className="mt-2 space-y-2 pl-2">
+                    {userPlaces.map((place) => {
+                      const typeInfo = placeTypes[place.type] || {};
+                      const loc = getLocationById(place.locationId);
+                      return (
+                        <div key={place.id} className="bg-white rounded-lg p-3 border border-slate-100">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: (typeInfo.color || '#64748b') + '20', color: typeInfo.color || '#64748b' }}>
+                              {typeInfo.label || place.type}
+                            </span>
+                            <h4 className="font-medium text-sm text-slate-800">{place.name}</h4>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">{place.description}</p>
+                          {place.cost && <p className="text-xs text-slate-400 mt-0.5">{place.cost}</p>}
+                          {loc?.address && <p className="text-[10px] text-slate-400 mt-0.5">{loc.address}</p>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
             {userVehicles.length > 0 && (
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
-                <Car size={16} className="text-blue-500" />
-                <span className="text-sm text-slate-700 flex-1">{userVehicles.length} vehicle{userVehicles.length !== 1 ? 's' : ''}</span>
+              <div>
+                <button
+                  onClick={() => setExpandedListing(expandedListing === 'vehicles' ? null : 'vehicles')}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <Car size={16} className="text-blue-500" />
+                  <span className="text-sm text-slate-700 flex-1 text-left">{userVehicles.length} vehicle{userVehicles.length !== 1 ? 's' : ''}</span>
+                  {expandedListing === 'vehicles' ? <ChevronDown size={16} className="text-slate-400" /> : <ChevronRight size={16} className="text-slate-400" />}
+                </button>
+                {expandedListing === 'vehicles' && (
+                  <div className="mt-2 space-y-2 pl-2">
+                    {userVehicles.map((v) => {
+                      const vType = vehicleTypes[v.type] || {};
+                      return (
+                        <div key={v.id} className="bg-white rounded-lg p-3 border border-slate-100">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: (vType.color || '#64748b') + '20', color: vType.color || '#64748b' }}>
+                              {vType.label || v.type}
+                            </span>
+                            <h4 className="font-medium text-sm text-slate-800">{v.name}</h4>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">{v.description}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`text-[10px] font-medium ${v.available !== false ? 'text-emerald-600' : 'text-red-500'}`}>
+                              {v.available !== false ? 'Available' : 'Not Available'}
+                            </span>
+                            {v.cost && <span className="text-xs text-slate-400">{v.cost}</span>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
             {userGear.length > 0 && (
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
-                <Package size={16} className="text-orange-500" />
-                <span className="text-sm text-slate-700 flex-1">{userGear.length} gear item{userGear.length !== 1 ? 's' : ''}</span>
+              <div>
+                <button
+                  onClick={() => setExpandedListing(expandedListing === 'gear' ? null : 'gear')}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <Package size={16} className="text-orange-500" />
+                  <span className="text-sm text-slate-700 flex-1 text-left">{userGear.length} gear item{userGear.length !== 1 ? 's' : ''}</span>
+                  {expandedListing === 'gear' ? <ChevronDown size={16} className="text-slate-400" /> : <ChevronRight size={16} className="text-slate-400" />}
+                </button>
+                {expandedListing === 'gear' && (
+                  <div className="mt-2 space-y-2 pl-2">
+                    {userGear.map((item) => (
+                      <div key={item.id} className="bg-white rounded-lg p-3 border border-slate-100">
+                        <h4 className="font-medium text-sm text-slate-800">{item.name}</h4>
+                        <p className="text-xs text-slate-500 mt-1">{item.description}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`text-[10px] font-medium ${item.available !== false ? 'text-emerald-600' : 'text-red-500'}`}>
+                            {item.available !== false ? 'Available' : 'In Use'}
+                          </span>
+                          {item.cost && <span className="text-xs text-slate-400">{item.cost}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             {userPlaces.length === 0 && userVehicles.length === 0 && userGear.length === 0 && (
@@ -297,7 +379,11 @@ export default function Profile() {
           </h3>
           <div className="space-y-2">
             {userTribes.map((tribe) => (
-              <div key={tribe.id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
+              <button
+                key={tribe.id}
+                onClick={() => navigate('/tribes')}
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+              >
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: tribe.color + '20' }}>
                   <Users size={14} style={{ color: tribe.color }} />
                 </div>
@@ -306,7 +392,7 @@ export default function Profile() {
                   <p className="text-xs text-slate-400">{tribe.memberCount} members</p>
                 </div>
                 <ChevronRight size={16} className="text-slate-300" />
-              </div>
+              </button>
             ))}
           </div>
         </div>
