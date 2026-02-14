@@ -29,7 +29,7 @@ const placeTypeIcons = {
 export default function Search() {
   const {
     allUsers, user, allPlaces, allGear, allVehicles, allEvents,
-    getUserById, startDirectMessage, getUserCurrentLocation, getLocationById,
+    getUserById, startDirectMessage, getUserCurrentLocation, getLocationById, rsvpEvent,
   } = useApp();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('people');
@@ -37,6 +37,7 @@ export default function Search() {
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [selectedPlaceType, setSelectedPlaceType] = useState('all');
   const [maxDistance, setMaxDistance] = useState(50);
+  const [rsvpd, setRsvpd] = useState(new Set());
 
   const otherUsers = allUsers.filter((u) => u.id !== user.id);
 
@@ -403,8 +404,16 @@ export default function Search() {
                       <p className="text-xs text-slate-400">Hosted by {host?.name || 'Unknown'}</p>
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-xs text-emerald-600 font-medium">{event.attendees} attending</span>
-                        <button className="text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg hover:bg-emerald-100 transition-colors">
-                          RSVP
+                        <button
+                          onClick={() => { rsvpEvent(event.id); setRsvpd((prev) => new Set(prev).add(event.id)); }}
+                          disabled={rsvpd.has(event.id)}
+                          className={`text-xs font-medium px-3 py-1 rounded-lg transition-colors ${
+                            rsvpd.has(event.id)
+                              ? 'bg-emerald-600 text-white cursor-default'
+                              : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100'
+                          }`}
+                        >
+                          {rsvpd.has(event.id) ? 'Going!' : 'RSVP'}
                         </button>
                       </div>
                     </div>

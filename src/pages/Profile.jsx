@@ -8,9 +8,14 @@ export default function Profile() {
   const {
     user, logout, getUserTribes, getUserPlaces, getUserVehicles, getUserGear,
     addPlace, addVehicle, addGear, addLocation, getUserCurrentLocation, getLocationById,
+    updateProfile, addFutureLocation,
   } = useApp();
   const [activeSection, setActiveSection] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(null);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showFutureLocModal, setShowFutureLocModal] = useState(false);
+  const [editData, setEditData] = useState({ name: '', bio: '' });
+  const [futureLocData, setFutureLocData] = useState({ city: '', state: '', date: '', lat: '', lng: '' });
   const userTribes = getUserTribes();
   const userPlaces = getUserPlaces(user.id);
   const userVehicles = getUserVehicles(user.id);
@@ -139,7 +144,10 @@ export default function Profile() {
             </div>
           </div>
 
-          <button className="mt-4 flex items-center gap-2 mx-auto text-sm text-emerald-600 font-medium bg-emerald-50 px-4 py-2 rounded-xl hover:bg-emerald-100 transition-colors">
+          <button
+            onClick={() => { setEditData({ name: user.name === 'You' ? '' : user.name, bio: user.bio || '' }); setShowEditProfile(true); }}
+            className="mt-4 flex items-center gap-2 mx-auto text-sm text-emerald-600 font-medium bg-emerald-50 px-4 py-2 rounded-xl hover:bg-emerald-100 transition-colors"
+          >
             <Edit3 size={14} /> Edit Profile
           </button>
         </div>
@@ -248,7 +256,10 @@ export default function Profile() {
                 </div>
               );
             })}
-            <button className="w-full py-2 text-sm text-emerald-600 font-medium rounded-xl border border-dashed border-emerald-300 hover:bg-emerald-50 transition-colors">
+            <button
+              onClick={() => { setFutureLocData({ city: '', state: '', date: '', lat: '', lng: '' }); setShowFutureLocModal(true); }}
+              className="w-full py-2 text-sm text-emerald-600 font-medium rounded-xl border border-dashed border-emerald-300 hover:bg-emerald-50 transition-colors"
+            >
               + Add Future Location
             </button>
           </div>
@@ -302,11 +313,17 @@ export default function Profile() {
 
         {/* Settings / Logout */}
         <div className="space-y-2">
-          <button className="w-full text-left bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-shadow">
+          <button
+            onClick={() => alert('Settings & Privacy coming soon!')}
+            className="w-full text-left bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-shadow"
+          >
             <span className="text-sm font-medium text-slate-700">Settings & Privacy</span>
             <ChevronRight size={16} className="text-slate-300" />
           </button>
-          <button className="w-full text-left bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-shadow">
+          <button
+            onClick={() => alert('Subscription management coming soon!')}
+            className="w-full text-left bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-shadow"
+          >
             <span className="text-sm font-medium text-slate-700">Subscription</span>
             <ChevronRight size={16} className="text-slate-300" />
           </button>
@@ -490,6 +507,100 @@ export default function Profile() {
               <button onClick={handleCreateRecommendation} disabled={!formData.name || !formData.lat || !formData.lng}
                 className="w-full py-3.5 rounded-xl bg-amber-500 text-white font-medium text-sm hover:bg-amber-600 transition-colors disabled:opacity-50">
                 Add Recommendation
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      {showEditProfile && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-8 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-lg text-slate-800">Edit Profile</h3>
+              <button onClick={() => setShowEditProfile(false)} className="p-1 rounded-lg hover:bg-slate-100"><X size={20} /></button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Display Name</label>
+                <input type="text" placeholder="Your name" value={editData.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                  className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Bio</label>
+                <textarea placeholder="Tell people about yourself..." value={editData.bio} onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
+                  className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" rows={3} />
+              </div>
+              <button
+                onClick={() => { updateProfile({ name: editData.name || 'You', bio: editData.bio }); setShowEditProfile(false); }}
+                disabled={!editData.name?.trim()}
+                className="w-full py-3.5 rounded-xl bg-emerald-600 text-white font-medium text-sm hover:bg-emerald-700 transition-colors disabled:opacity-50"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Future Location Modal */}
+      {showFutureLocModal && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-8 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-lg text-slate-800">Add Future Location</h3>
+              <button onClick={() => setShowFutureLocModal(false)} className="p-1 rounded-lg hover:bg-slate-100"><X size={20} /></button>
+            </div>
+            <p className="text-sm text-slate-500">Let your tribes know where you'll be traveling to.</p>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">City *</label>
+                  <input type="text" placeholder="San Francisco" value={futureLocData.city} onChange={(e) => setFutureLocData({ ...futureLocData, city: e.target.value })}
+                    className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">State *</label>
+                  <input type="text" placeholder="CA" value={futureLocData.state} onChange={(e) => setFutureLocData({ ...futureLocData, state: e.target.value })}
+                    className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Date *</label>
+                <input type="date" value={futureLocData.date} onChange={(e) => setFutureLocData({ ...futureLocData, date: e.target.value })}
+                  className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Latitude</label>
+                  <input type="text" placeholder="37.7749" value={futureLocData.lat} onChange={(e) => setFutureLocData({ ...futureLocData, lat: e.target.value })}
+                    className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Longitude</label>
+                  <input type="text" placeholder="-122.4194" value={futureLocData.lng} onChange={(e) => setFutureLocData({ ...futureLocData, lng: e.target.value })}
+                    className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  if (!futureLocData.city || !futureLocData.date) return;
+                  const loc = addLocation({
+                    name: `${futureLocData.city} Trip`,
+                    address: `${futureLocData.city}, ${futureLocData.state}`,
+                    lat: parseFloat(futureLocData.lat) || 0,
+                    lng: parseFloat(futureLocData.lng) || 0,
+                    city: futureLocData.city,
+                    state: futureLocData.state,
+                  });
+                  addFutureLocation(loc.id, futureLocData.date);
+                  setShowFutureLocModal(false);
+                }}
+                disabled={!futureLocData.city || !futureLocData.date}
+                className="w-full py-3.5 rounded-xl bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                Add Location
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { useApp } from './context/AppContext';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
@@ -11,9 +11,16 @@ import Search from './pages/Search';
 import Messages from './pages/Messages';
 import Profile from './pages/Profile';
 import UserProfile from './pages/UserProfile';
+import Admin from './pages/Admin';
 
 function AppContent() {
   const { isLoggedIn } = useApp();
+  const location = useLocation();
+
+  // Admin page has its own layout (no header/nav)
+  if (location.pathname === '/admin') {
+    return <Admin />;
+  }
 
   if (!isLoggedIn) {
     return <Login />;
@@ -42,7 +49,10 @@ function AppContent() {
 export default function App() {
   return (
     <HashRouter>
-      <AppContent />
+      <Routes>
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/*" element={<AppContent />} />
+      </Routes>
     </HashRouter>
   );
 }

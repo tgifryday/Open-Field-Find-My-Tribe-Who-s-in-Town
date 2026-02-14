@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import Avatar from '../components/Avatar';
 
 export default function Tribes() {
-  const { user, getUserTribes, allTribes, getUserById, createTribe, getUserCurrentLocation } = useApp();
+  const { user, getUserTribes, allTribes, getUserById, createTribe, joinTribe, leaveTribe, getUserCurrentLocation } = useApp();
   const [view, setView] = useState('list');
   const [selectedTribe, setSelectedTribe] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
@@ -120,7 +120,10 @@ export default function Tribes() {
           </div>
 
           {/* Leave Group */}
-          <button className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-red-200 text-red-500 text-sm font-medium hover:bg-red-50 transition-colors">
+          <button
+            onClick={() => { leaveTribe(tribe.id); setView('list'); setSelectedTribe(null); }}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-red-200 text-red-500 text-sm font-medium hover:bg-red-50 transition-colors"
+          >
             <LogOut size={16} /> Leave Tribe
           </button>
         </div>
@@ -183,7 +186,10 @@ export default function Tribes() {
                       <p className="text-xs text-slate-400">{tribe.memberCount} members</p>
                     </div>
                   </div>
-                  <button className="text-sm font-medium text-emerald-600 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 transition-colors">
+                  <button
+                    onClick={() => joinTribe(tribe.id)}
+                    className="text-sm font-medium text-emerald-600 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                  >
                     Join
                   </button>
                 </div>
